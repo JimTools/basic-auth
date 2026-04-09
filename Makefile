@@ -16,35 +16,27 @@ help:
 	@echo ""
 
 vendor: $(wildcard composer.lock)
-	composer install --prefer-dist
+	@composer install --prefer-dist
 
 lint: vendor
-	vendor/bin/phplint . --exclude=vendor/
-	vendor/bin/ecs check src tests
+	@vendor/bin/php-cs-fixer check --diff
 
 lint-fix: vendor
-	vendor/bin/ecs check src tests --fix
-
-rector:
-	vendor/bin/rector --clear-cache --dry-run
-
-rector-fix:
-	vendor/bin/rector --clear-cache
-	vendor/bin/ecs check src tests --fix
+	@vendor/bin/php-cs-fixer fix
 
 unit: vendor
-	phpdbg -qrr vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml --coverage-html=./report/
+	@phpdbg -qrr vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml --coverage-html=./report/
 
 static: vendor
-	vendor/bin/phpstan analyse src --level 8
+	@vendor/bin/phpstan analyse
 
 watch: vendor
-	find . -name "*.php" -not -path "./vendor/*" -o -name "*.json" -not -path "./vendor/*" | entr -c make test
+	@find . -name "*.php" -not -path "./vendor/*" -o -name "*.json" -not -path "./vendor/*" | entr -c make test
 
 test: lint unit static
 
 clean:
-	rm -rf vendor
-	rm composer.lock
+	@rm -rf vendor
+	@rm composer.lock
 
 .PHONY: help lint unit watch test clean

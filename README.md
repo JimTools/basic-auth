@@ -1,16 +1,16 @@
 # PSR-7 and PSR-15 Basic Auth Middleware
 
 > [!NOTE]
-> This package is a maintained versions of a [tuupola/slim-basic-auth](https://github.com/tuupola/slim-basic-auth/tree/3.x),
-> version 1 is forked from 3.x and will remained 100% backward compatible with the original libary.
+> This package is a maintained version of a [tuupola/slim-basic-auth](https://github.com/tuupola/slim-basic-auth/tree/3.x),
+> version 1 is forked from 3.x and will remained 100% backward compatible with the original library.
 
 This middleware implements [HTTP Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication). It was originally developed for Slim but can be used with all frameworks using PSR-7 or PSR-15 style middlewares. It has been tested  with [Slim Framework](http://www.slimframework.com/) and [Zend Expressive](https://zendframework.github.io/zend-expressive/).
 
 
 [![Latest Version](https://img.shields.io/packagist/v/jimtools/basic-auth.svg?style=flat-square)](https://packagist.org/packages/jimtools/basic-auth)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/jimtools/basic-auth/tests.yml?branch=3.x&style=flat-square)](https://github.com/jimtools/basic-auth/actions)
-[![Coverage](https://img.shields.io/codecov/c/github/jimtools/basic-auth/3.x.svg?style=flat-square)](https://codecov.io/gh/jimtools/basic-auth/branch/3.x)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/jimtools/basic-auth/tests.yml?branch=main&style=flat-square)](https://github.com/jimtools/basic-auth/actions)
+[![Coverage](https://img.shields.io/codecov/c/github/jimtools/basic-auth/main.svg?style=flat-square)](https://codecov.io/gh/jimtools/basic-auth/branch/main)
 
 Heads up! You are reading documentation for [3.x branch](https://github.com/tuupola/slim-basic-auth/tree/3.x) which is PHP 7.1 and up only. If you are using older version of PHP see the [2.x branch](https://github.com/tuupola/slim-basic-auth/tree/2.x). These two branches are not backwards compatible, see [UPGRADING](https://github.com/tuupola/slim-basic-auth/blob/3.x/UPGRADING.md) for instructions how to upgrade.
 

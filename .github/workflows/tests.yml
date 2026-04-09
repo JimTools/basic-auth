@@ -6,8 +6,8 @@ jobs:
       fail-fast: false
       matrix:
         operating-system: [ubuntu-latest]
-        php-versions: ["7.2", "7.3", "7.4", "8.0", "8.1", "8.2", "8.3"]
-        dependency-versions: ["highest", "lowest"]
+        php: ["8.0", "8.1", "8.2", "8.3", "8.4", "8.5"]
+        dependencies: ["highest"]
     runs-on: ${{ matrix.operating-system }}
 
     steps:
@@ -17,14 +17,14 @@ jobs:
       - name: Setup PHP and extensions
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ matrix.php }}
           extensions: gmp
           coverage: xdebug
 
       - name: Install and cache Composer dependencies
         uses: ramsey/composer-install@v4
         with:
-          dependency-versions: ${{ matrix.dependency-versions }}
+          dependency-versions: ${{ matrix.dependencies }}
 
       - name: Run linter
         run: make lint

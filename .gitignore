@@ -1,13 +1,10 @@
-/node_modules/
 /vendor/
-/demo/vendor/
-/demo/.vagrant/
 /report/
 .DS_Store
 composer.lock
 phpunit.xml
-/tests/_output/
-.phplint-cache
 coverage.xml
+.phpunit.cache
 .phpunit.result.cache
+.php-cs-fixer.cache
 
