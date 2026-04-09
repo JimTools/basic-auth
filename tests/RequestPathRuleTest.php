@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
 
 Copyright (c) 2013-2024 Mika Tuupola
@@ -26,151 +28,153 @@ SOFTWARE.
 
 /**
  * @see       https://github.com/tuupola/slim-basic-auth
+ *
  * @license   https://www.opensource.org/licenses/mit-license.php
  */
 
 namespace Tuupola\Middleware\HttpBasicAuthentication;
 
-use Laminas\Diactoros\Response;
 use Laminas\Diactoros\ServerRequest;
-use Laminas\Diactoros\ServerRequestFactory;
 use Laminas\Diactoros\Uri;
 use PHPUnit\Framework\TestCase;
 
-class RequestPathTest extends TestCase
+/**
+ * @internal
+ */
+final class RequestPathRuleTest extends TestCase
 {
     public function testShouldAcceptArrayAndStringAsPath()
     {
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/admin/protected"))
-            ->withMethod("GET");
+            ->withUri(new Uri('https://example.com/admin/protected'))
+            ->withMethod('GET');
 
         $rule = new RequestPathRule([
-            "path" => "/admin",
+            'path' => '/admin',
         ]);
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
 
         $rule = new RequestPathRule([
-            "path" => ["/admin"],
+            'path' => ['/admin'],
         ]);
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
     }
 
     public function testShouldAuthenticateEverything()
     {
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/"))
-            ->withMethod("GET");
+            ->withUri(new Uri('https://example.com/'))
+            ->withMethod('GET');
 
         $rule = new RequestPathRule([
-            "path" => "/",
+            'path' => '/',
         ]);
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
 
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api"))
-            ->withMethod("GET");
+            ->withUri(new Uri('https://example.com/api'))
+            ->withMethod('GET');
 
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
     }
 
     public function testShouldAuthenticateOnlyApi()
     {
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/"))
-            ->withMethod("GET");
+            ->withUri(new Uri('https://example.com/'))
+            ->withMethod('GET');
 
         $rule = new RequestPathRule([
-            "path" => "/api",
+            'path' => '/api',
         ]);
-        $this->assertFalse($rule($request));
+        self::assertFalse($rule($request));
 
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api"))
-            ->withMethod("GET");
+            ->withUri(new Uri('https://example.com/api'))
+            ->withMethod('GET');
 
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
     }
 
     public function testShouldAuthenticateCreateAndList()
     {
-        /* Authenticate only create and list actions */
+        // Authenticate only create and list actions
         $rule = new RequestPathRule([
-            "path" => ["/api/create", "/api/list"],
+            'path' => ['/api/create', '/api/list'],
         ]);
 
-        /* Should not authenticate */
+        // Should not authenticate
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api"))
-            ->withMethod("GET");
-        $this->assertFalse($rule($request));
+            ->withUri(new Uri('https://example.com/api'))
+            ->withMethod('GET');
+        self::assertFalse($rule($request));
 
-        /* Should authenticate */
+        // Should authenticate
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api/create"))
-            ->withMethod("GET");
-        $this->assertTrue($rule($request));
+            ->withUri(new Uri('https://example.com/api/create'))
+            ->withMethod('GET');
+        self::assertTrue($rule($request));
 
-        /* Should authenticate */
+        // Should authenticate
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api/list"))
-            ->withMethod("GET");
-        $this->assertTrue($rule($request));
+            ->withUri(new Uri('https://example.com/api/list'))
+            ->withMethod('GET');
+        self::assertTrue($rule($request));
 
-        /* Should not authenticate */
+        // Should not authenticate
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api/ping"))
-            ->withMethod("GET");
-        $this->assertFalse($rule($request));
+            ->withUri(new Uri('https://example.com/api/ping'))
+            ->withMethod('GET');
+        self::assertFalse($rule($request));
     }
 
     public function testShouldIgnoreLogin()
     {
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api"))
-            ->withMethod("GET");
+            ->withUri(new Uri('https://example.com/api'))
+            ->withMethod('GET');
 
         $rule = new RequestPathRule([
-            "path" => "/api",
-            "ignore" => ["/api/login"],
+            'path' => '/api',
+            'ignore' => ['/api/login'],
         ]);
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
 
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api/login"))
-            ->withMethod("GET");
+            ->withUri(new Uri('https://example.com/api/login'))
+            ->withMethod('GET');
 
-        $this->assertFalse($rule($request));
+        self::assertFalse($rule($request));
     }
 
     public function testBug50ShouldAuthenticateMultipleSlashes()
     {
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/"))
-            ->withMethod("GET");
+            ->withUri(new Uri('https://example.com/'))
+            ->withMethod('GET');
         $rule = new RequestPathRule([
-            "path" => "/v1/api",
+            'path' => '/v1/api',
         ]);
-        $this->assertFalse($rule($request));
+        self::assertFalse($rule($request));
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/v1/api"))
-            ->withMethod("GET");
-        $this->assertTrue($rule($request));
+            ->withUri(new Uri('https://example.com/v1/api'))
+            ->withMethod('GET');
+        self::assertTrue($rule($request));
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/v1//api"))
-            ->withMethod("GET");
-        $this->assertTrue($rule($request));
+            ->withUri(new Uri('https://example.com/v1//api'))
+            ->withMethod('GET');
+        self::assertTrue($rule($request));
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/v1//////api"))
-            ->withMethod("GET");
-        $this->assertTrue($rule($request));
+            ->withUri(new Uri('https://example.com/v1//////api'))
+            ->withMethod('GET');
+        self::assertTrue($rule($request));
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com//v1/api"))
-            ->withMethod("GET");
-        $this->assertTrue($rule($request));
+            ->withUri(new Uri('https://example.com//v1/api'))
+            ->withMethod('GET');
+        self::assertTrue($rule($request));
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com//////v1/api"))
-            ->withMethod("GET");
-        $this->assertTrue($rule($request));
+            ->withUri(new Uri('https://example.com//////v1/api'))
+            ->withMethod('GET');
+        self::assertTrue($rule($request));
     }
 }

@@ -24,7 +24,7 @@ SOFTWARE.
 
 */
 
-/**
+/*
  * @see       https://github.com/tuupola/slim-basic-auth
  * @license   https://www.opensource.org/licenses/mit-license.php
  */
@@ -33,10 +33,15 @@ declare(strict_types=1);
 
 namespace Tuupola\Middleware\HttpBasicAuthentication;
 
+use PDO;
+
+use function defined;
+
 final class PdoAuthenticator implements AuthenticatorInterface
 {
     /**
      * Stores all the options passed to the authenticator.
+     *
      * @var mixed[]
      */
     private $options;
@@ -46,11 +51,11 @@ final class PdoAuthenticator implements AuthenticatorInterface
      */
     public function __construct(array $options = [])
     {
-        /* Default options. */
+        // Default options.
         $this->options = [
-            "table" => "users",
-            "user" => "user",
-            "hash" => "hash",
+            'table' => 'users',
+            'user' => 'user',
+            'hash' => 'hash',
         ];
 
         if ($options) {
@@ -63,16 +68,16 @@ final class PdoAuthenticator implements AuthenticatorInterface
      */
     public function __invoke(array $arguments): bool
     {
-        $user = $arguments["user"];
-        $password = $arguments["password"];
+        $user = $arguments['user'];
+        $password = $arguments['password'];
 
         $sql = $this->sql();
 
-        $statement = $this->options["pdo"]->prepare($sql);
+        $statement = $this->options['pdo']->prepare($sql);
         $statement->execute([$user]);
 
-        if ($user = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            return password_verify($password, $user[$this->options["hash"]]);
+        if ($user = $statement->fetch(PDO::FETCH_ASSOC)) {
+            return password_verify($password, $user[$this->options['hash']]);
         }
 
         return false;
@@ -80,26 +85,26 @@ final class PdoAuthenticator implements AuthenticatorInterface
 
     public function sql(): string
     {
-        $driver = $this->options["pdo"]->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        $driver = $this->options['pdo']->getAttribute(PDO::ATTR_DRIVER_NAME);
 
-        /* Workaround to test without sqlsrv with */
-        if (defined("__PHPUNIT_ATTR_DRIVER_NAME__")) {
+        // Workaround to test without sqlsrv with
+        if (defined('__PHPUNIT_ATTR_DRIVER_NAME__')) {
             $driver = __PHPUNIT_ATTR_DRIVER_NAME__;
         }
 
-        if ("sqlsrv" === $driver) {
-            $sql =
-                "SELECT TOP 1 *
+        if ('sqlsrv' === $driver) {
+            $sql
+                = "SELECT TOP 1 *
                  FROM {$this->options['table']}
                  WHERE {$this->options['user']} = ?";
         } else {
-            $sql =
-                "SELECT *
+            $sql
+                = "SELECT *
                  FROM {$this->options['table']}
                  WHERE {$this->options['user']} = ?
                  LIMIT 1";
         }
 
-        return (string) preg_replace("!\s+!", " ", $sql);
+        return (string) preg_replace('!\\s+!', ' ', $sql);
     }
 }

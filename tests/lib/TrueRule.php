@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
 
 Copyright (c) 2013-2024 Mika Tuupola
@@ -26,6 +28,7 @@ SOFTWARE.
 
 /**
  * @see       https://github.com/tuupola/slim-basic-auth
+ *
  * @license   https://www.opensource.org/licenses/mit-license.php
  */
 

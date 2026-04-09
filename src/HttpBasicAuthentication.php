@@ -24,7 +24,7 @@ SOFTWARE.
 
 */
 
-/**
+/*
  * @see       https://github.com/tuupola/slim-basic-auth
  * @license   https://www.opensource.org/licenses/mit-license.php
  */
@@ -38,14 +38,20 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
 use SplStack;
 use Tuupola\Http\Factory\ResponseFactory;
-use Tuupola\Middleware\DoublePassTrait;
 use Tuupola\Middleware\HttpBasicAuthentication\ArrayAuthenticator;
-use Tuupola\Middleware\HttpBasicAuthentication\AuthenticatorInterface;
 use Tuupola\Middleware\HttpBasicAuthentication\RequestMethodRule;
 use Tuupola\Middleware\HttpBasicAuthentication\RequestPathRule;
 use Tuupola\Middleware\HttpBasicAuthentication\RuleInterface;
+
+use function call_user_func;
+use function count;
+use function in_array;
+use function is_array;
+use function is_callable;
+use function sprintf;
 
 final class HttpBasicAuthentication implements MiddlewareInterface
 {
@@ -60,16 +66,16 @@ final class HttpBasicAuthentication implements MiddlewareInterface
      * @var mixed[]
      */
     private $options = [
-        "secure" => true,
-        "relaxed" => ["localhost", "127.0.0.1"],
-        "users" => null,
-        "path" => null,
-        "ignore" => null,
-        "realm" => "Protected",
-        "authenticator" => null,
-        "before" => null,
-        "after" => null,
-        "error" => null,
+        'secure' => true,
+        'relaxed' => ['localhost', '127.0.0.1'],
+        'users' => null,
+        'path' => null,
+        'ignore' => null,
+        'realm' => 'Protected',
+        'authenticator' => null,
+        'before' => null,
+        'after' => null,
+        'error' => null,
     ];
 
     /**
@@ -77,38 +83,38 @@ final class HttpBasicAuthentication implements MiddlewareInterface
      */
     public function __construct(array $options = [])
     {
-        /* Setup stack for rules */
+        // Setup stack for rules
         $this->rules = new SplStack();
 
-        /* Store passed in options overwriting any defaults */
+        // Store passed in options overwriting any defaults
         $this->hydrate($options);
 
-        /* If array of users was passed in options create an authenticator */
-        if (is_array($this->options["users"])) {
-            $this->options["authenticator"] = new ArrayAuthenticator([
-                "users" => $this->options["users"],
+        // If array of users was passed in options create an authenticator
+        if (is_array($this->options['users'])) {
+            $this->options['authenticator'] = new ArrayAuthenticator([
+                'users' => $this->options['users'],
             ]);
         }
 
-        /* If nothing was passed in options add default rules. */
-        if (!isset($options["rules"])) {
+        // If nothing was passed in options add default rules.
+        if (!isset($options['rules'])) {
             $this->rules->push(new RequestMethodRule([
-                "ignore" => ["OPTIONS"],
+                'ignore' => ['OPTIONS'],
             ]));
         }
 
-        /* If path was given in easy mode add rule for it. */
-        if (null !== $this->options["path"]) {
+        // If path was given in easy mode add rule for it.
+        if (null !== $this->options['path']) {
             $this->rules->push(new RequestPathRule([
-                "path" => $this->options["path"],
-                "ignore" => $this->options["ignore"],
+                'path' => $this->options['path'],
+                'ignore' => $this->options['ignore'],
             ]));
         }
 
-        /* There must be an authenticator either passed via options */
-        /* or added because $this->options["users"] was an array. */
-        if (null === $this->options["authenticator"]) {
-            throw new \RuntimeException("Authenticator or users array must be given");
+        // There must be an authenticator either passed via options
+        // or added because $this->options["users"] was an array.
+        if (null === $this->options['authenticator']) {
+            throw new RuntimeException('Authenticator or users array must be given');
         }
     }
 
@@ -121,21 +127,21 @@ final class HttpBasicAuthentication implements MiddlewareInterface
         $scheme = $request->getUri()->getScheme();
         $server_params = $request->getServerParams();
 
-        /* If rules say we should not authenticate call next and return. */
+        // If rules say we should not authenticate call next and return.
         if (false === $this->shouldAuthenticate($request)) {
             return $handler->handle($request);
         }
 
-        /* HTTP allowed only if secure is false or server is in relaxed array. */
-        if ("https" !== $scheme && true === $this->options["secure"]) {
-            $allowedHost = in_array($host, $this->options["relaxed"]);
+        // HTTP allowed only if secure is false or server is in relaxed array.
+        if ('https' !== $scheme && true === $this->options['secure']) {
+            $allowedHost = in_array($host, $this->options['relaxed'], true);
 
-            /* if 'headers' is in the 'relaxed' key, then we check for forwarding */
+            // if 'headers' is in the 'relaxed' key, then we check for forwarding
             $allowedForward = false;
-            if (in_array("headers", $this->options["relaxed"])) {
+            if (in_array('headers', $this->options['relaxed'], true)) {
                 if (
-                    $request->getHeaderLine("X-Forwarded-Proto") === "https"
-                    && $request->getHeaderLine('X-Forwarded-Port') === "443"
+                    $request->getHeaderLine('X-Forwarded-Proto') === 'https'
+                    && $request->getHeaderLine('X-Forwarded-Port') === '443'
                 ) {
                     $allowedForward = true;
                 }
@@ -143,224 +149,64 @@ final class HttpBasicAuthentication implements MiddlewareInterface
 
             if (!($allowedHost || $allowedForward)) {
                 $message = sprintf(
-                    "Insecure use of middleware over %s denied by configuration.",
+                    'Insecure use of middleware over %s denied by configuration.',
                     strtoupper($scheme)
                 );
-                throw new \RuntimeException($message);
+
+                throw new RuntimeException($message);
             }
         }
 
-        /* Just in case. */
+        // Just in case.
         $params = [
-            "user" => null,
-            "password" => null,
+            'user' => null,
+            'password' => null,
         ];
 
-        if (preg_match("/Basic\s+(.*)$/i", $request->getHeaderLine("Authorization"), $matches)) {
-            $explodedCredential = explode(":", base64_decode($matches[1]), 2);
-            if (count($explodedCredential) == 2) {
-                [$params["user"], $params["password"]] = $explodedCredential;
+        if (preg_match('/Basic\\s+(.*)$/i', $request->getHeaderLine('Authorization'), $matches)) {
+            $explodedCredential = explode(':', base64_decode($matches[1], true) ?: '', 2);
+            if (count($explodedCredential) === 2) {
+                [$params['user'], $params['password']] = $explodedCredential;
             }
         }
 
-        /* Check if user authenticates. */
-        if (false === $this->options["authenticator"]($params)) {
-            /* Set response headers before giving it to error callback */
+        // Check if user authenticates.
+        if (false === $this->options['authenticator']($params)) {
+            // Set response headers before giving it to error callback
             $response = (new ResponseFactory())
                 ->createResponse(401)
                 ->withHeader(
-                    "WWW-Authenticate",
-                    sprintf('Basic realm="%s"', $this->options["realm"])
+                    'WWW-Authenticate',
+                    sprintf('Basic realm="%s"', $this->options['realm'])
                 );
 
             return $this->processError($response, [
-                "message" => "Authentication failed",
-                "params" => $params,
+                'message' => 'Authentication failed',
+                'params' => $params,
             ]);
         }
 
-        /* Modify $request before calling next middleware. */
-        if (is_callable($this->options["before"])) {
+        // Modify $request before calling next middleware.
+        if (is_callable($this->options['before'])) {
             $response = (new ResponseFactory())->createResponse(200);
-            $before_request = $this->options["before"]($request, $params);
+            $before_request = $this->options['before']($request, $params);
             if ($before_request instanceof ServerRequestInterface) {
                 $request = $before_request;
             }
         }
 
-        /* Everything ok, call next middleware. */
+        // Everything ok, call next middleware.
         $response = $handler->handle($request);
 
-        /* Modify $response before returning. */
-        if (is_callable($this->options["after"])) {
-            $after_response = $this->options["after"]($response, $params);
+        // Modify $response before returning.
+        if (is_callable($this->options['after'])) {
+            $after_response = $this->options['after']($response, $params);
             if ($after_response instanceof ResponseInterface) {
                 return $after_response;
             }
         }
 
         return $response;
-    }
-
-    /**
-     * Hydrate all options from given array.
-     *
-     * @param mixed[] $data
-     */
-    private function hydrate(array $data = []): void
-    {
-        foreach ($data as $key => $value) {
-            /* https://github.com/facebook/hhvm/issues/6368 */
-            $key = str_replace(".", " ", $key);
-            $method = lcfirst(ucwords($key));
-            $method = str_replace(" ", "", $method);
-            if (method_exists($this, $method)) {
-                /* Try to use setter */
-                /** @phpstan-ignore-next-line */
-                call_user_func([$this, $method], $value);
-            } else {
-                /* Or fallback to setting option directly */
-                $this->options[$key] = $value;
-            }
-        }
-    }
-
-    /**
-     * Test if current request should be authenticated.
-     */
-    private function shouldAuthenticate(ServerRequestInterface $request): bool
-    {
-        /* If any of the rules in stack return false will not authenticate */
-        foreach ($this->rules as $callable) {
-            if (false === $callable($request)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Execute the error handler.
-     *
-     * @param mixed[] $arguments
-     */
-    private function processError(ResponseInterface $response, array $arguments): ResponseInterface
-    {
-        if (is_callable($this->options["error"])) {
-            $handler_response = $this->options["error"]($response, $arguments);
-            if ($handler_response instanceof ResponseInterface) {
-                return $handler_response;
-            }
-        }
-        return $response;
-    }
-
-    /**
-     * Set path where middleware should bind to.
-     *
-     * @param string|string[] $path
-     * @phpstan-ignore method.unused
-     */
-    private function path($path): void
-    {
-        $this->options["path"] = (array) $path;
-    }
-
-    /**
-     * Set path which middleware ignores.
-     *
-     * @param string[] $ignore
-     * @phpstan-ignore method.unused
-     */
-    private function ignore($ignore): void
-    {
-        $this->options["ignore"] = (array) $ignore;
-    }
-
-    /**
-     * Set the authenticator.
-     *
-     * @phpstan-ignore method.unused
-     */
-    private function authenticator(callable $authenticator): void
-    {
-        $this->options["authenticator"] = $authenticator;
-    }
-
-    /**
-     * Set the users array.
-     *
-     * @param string[] $users
-     * @phpstan-ignore method.unused
-     */
-    private function users(array $users): void
-    {
-        $this->options["users"] = $users;
-    }
-
-    /**
-     * Set the secure flag.
-     *
-     * @phpstan-ignore method.unused
-     */
-    private function secure(bool $secure): void
-    {
-        $this->options["secure"] = $secure;
-    }
-
-    /**
-     * Set hosts where secure rule is relaxed.
-     *
-     * @param string[] $relaxed
-     * @phpstan-ignore method.unused
-     */
-    private function relaxed(array $relaxed): void
-    {
-        $this->options["relaxed"] = $relaxed;
-    }
-
-    /**
-     * Set the handler which is called before other middlewares.
-     *
-     * @phpstan-ignore method.unused
-     */
-    private function before(Closure $before): void
-    {
-        $this->options["before"] = $before->bindTo($this);
-    }
-
-    /**
-     * Set the handler which is called after other middlewares.
-     *
-     * @phpstan-ignore method.unused
-     */
-    private function after(Closure $after): void
-    {
-        $this->options["after"] = $after->bindTo($this);
-    }
-
-    /**
-     * Set the handler which is if authentication fails.
-     *
-     * @phpstan-ignore method.unused
-     */
-    private function error(callable $error): void
-    {
-        $this->options["error"] = $error;
-    }
-
-    /**
-     * Set the rules
-     *
-     * @param RuleInterface[] $rules
-     * @phpstan-ignore method.unused
-     */
-    private function rules(array $rules): void
-    {
-        $this->rules = new SplStack();
-        foreach ($rules as $callable) {
-            $this->rules->push($callable);
-        }
     }
 
     /**
@@ -374,14 +220,14 @@ final class HttpBasicAuthentication implements MiddlewareInterface
     public function withRules(array $rules): self
     {
         $new = clone $this;
-        /* Clear the stack */
-        unset($new->rules);
+        // Clear the stack
         $new->rules = new SplStack();
 
-        /* Add the rules */
+        // Add the rules
         foreach ($rules as $callable) {
             $new = $new->addRule($callable);
         }
+
         return $new;
     }
 
@@ -395,8 +241,177 @@ final class HttpBasicAuthentication implements MiddlewareInterface
     {
         $new = clone $this;
         $new->rules = clone $this->rules;
-        /* @phpstan-ignore-next-line */
+        // @phpstan-ignore-next-line
         $new->rules->push($callable);
+
         return $new;
+    }
+
+    /**
+     * Hydrate all options from given array.
+     *
+     * @param mixed[] $data
+     */
+    private function hydrate(array $data = []): void
+    {
+        foreach ($data as $key => $value) {
+            // https://github.com/facebook/hhvm/issues/6368
+            $key = str_replace('.', ' ', $key);
+            $method = lcfirst(ucwords($key));
+            $method = str_replace(' ', '', $method);
+            if (method_exists($this, $method)) {
+                // Try to use setter
+                // @phpstan-ignore-next-line
+                call_user_func([$this, $method], $value);
+            } else {
+                // Or fallback to setting option directly
+                $this->options[$key] = $value;
+            }
+        }
+    }
+
+    /**
+     * Test if current request should be authenticated.
+     */
+    private function shouldAuthenticate(ServerRequestInterface $request): bool
+    {
+        // If any of the rules in stack return false will not authenticate
+        foreach ($this->rules as $callable) {
+            if (false === $callable($request)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Execute the error handler.
+     *
+     * @param mixed[] $arguments
+     */
+    private function processError(ResponseInterface $response, array $arguments): ResponseInterface
+    {
+        if (is_callable($this->options['error'])) {
+            $handler_response = $this->options['error']($response, $arguments);
+            if ($handler_response instanceof ResponseInterface) {
+                return $handler_response;
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Set path where middleware should bind to.
+     *
+     * @param string|string[] $path
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function path($path): void
+    {
+        $this->options['path'] = (array) $path;
+    }
+
+    /**
+     * Set path which middleware ignores.
+     *
+     * @param string[] $ignore
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function ignore($ignore): void
+    {
+        $this->options['ignore'] = (array) $ignore;
+    }
+
+    /**
+     * Set the authenticator.
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function authenticator(callable $authenticator): void
+    {
+        $this->options['authenticator'] = $authenticator;
+    }
+
+    /**
+     * Set the users array.
+     *
+     * @param string[] $users
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function users(array $users): void
+    {
+        $this->options['users'] = $users;
+    }
+
+    /**
+     * Set the secure flag.
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function secure(bool $secure): void
+    {
+        $this->options['secure'] = $secure;
+    }
+
+    /**
+     * Set hosts where secure rule is relaxed.
+     *
+     * @param string[] $relaxed
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function relaxed(array $relaxed): void
+    {
+        $this->options['relaxed'] = $relaxed;
+    }
+
+    /**
+     * Set the handler which is called before other middlewares.
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function before(Closure $before): void
+    {
+        $this->options['before'] = $before->bindTo($this);
+    }
+
+    /**
+     * Set the handler which is called after other middlewares.
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function after(Closure $after): void
+    {
+        $this->options['after'] = $after->bindTo($this);
+    }
+
+    /**
+     * Set the handler which is if authentication fails.
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function error(callable $error): void
+    {
+        $this->options['error'] = $error;
+    }
+
+    /**
+     * Set the rules.
+     *
+     * @param RuleInterface[] $rules
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function rules(array $rules): void
+    {
+        $this->rules = new SplStack();
+        foreach ($rules as $callable) {
+            $this->rules->push($callable);
+        }
     }
 }

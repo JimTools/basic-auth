@@ -24,7 +24,7 @@ SOFTWARE.
 
 */
 
-/**
+/*
  * @see       https://github.com/tuupola/slim-basic-auth
  * @license   https://www.opensource.org/licenses/mit-license.php
  */
@@ -33,10 +33,13 @@ declare(strict_types=1);
 
 namespace Tuupola\Middleware\HttpBasicAuthentication;
 
+use function strlen;
+
 final class ArrayAuthenticator implements AuthenticatorInterface
 {
     /**
      * Stores all the options passed to the authenticator.
+     *
      * @var mixed[]
      */
     private $options;
@@ -46,9 +49,9 @@ final class ArrayAuthenticator implements AuthenticatorInterface
      */
     public function __construct(array $options = [])
     {
-        /* Default options. */
+        // Default options.
         $this->options = [
-            "users" => [],
+            'users' => [],
         ];
 
         if ($options) {
@@ -61,21 +64,21 @@ final class ArrayAuthenticator implements AuthenticatorInterface
      */
     public function __invoke(array $arguments): bool
     {
-        $user = $arguments["user"];
-        $password = $arguments["password"];
+        $user = $arguments['user'] ?: '';
+        $password = $arguments['password'] ?: '';
 
-        /* Unknown user. */
-        if (!isset($this->options["users"][$user])) {
+        // Unknown user.
+        if (!isset($this->options['users'][$user])) {
             return false;
         }
 
-        if (self::isHash($this->options["users"][$user])) {
-            /* Hashed password. */
-            return password_verify($password, $this->options["users"][$user]);
-        } else {
-            /* Cleartext password. */
-            return $this->options["users"][$user] === $password;
+        if (self::isHash($this->options['users'][$user])) {
+            // Hashed password.
+            return password_verify($password, $this->options['users'][$user]);
         }
+
+        // Cleartext password.
+        return $this->options['users'][$user] === $password;
     }
 
     private static function isHash(string $password): bool

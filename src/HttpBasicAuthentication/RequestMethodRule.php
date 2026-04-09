@@ -24,7 +24,7 @@ SOFTWARE.
 
 */
 
-/**
+/*
  * @see       https://github.com/tuupola/slim-basic-auth
  * @license   https://www.opensource.org/licenses/mit-license.php
  */
@@ -35,14 +35,17 @@ namespace Tuupola\Middleware\HttpBasicAuthentication;
 
 use Psr\Http\Message\ServerRequestInterface;
 
+use function in_array;
+
 final class RequestMethodRule implements RuleInterface
 {
     /**
      * Stores all the options passed to the rule.
+     *
      * @var mixed[]
      */
-    protected $options = [
-        "ignore" => ["OPTIONS"],
+    private $options = [
+        'ignore' => ['OPTIONS'],
     ];
 
     /**
@@ -55,6 +58,6 @@ final class RequestMethodRule implements RuleInterface
 
     public function __invoke(ServerRequestInterface $request): bool
     {
-        return !in_array($request->getMethod(), $this->options["ignore"]);
+        return !in_array($request->getMethod(), $this->options['ignore'], true);
     }
 }
