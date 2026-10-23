@@ -61,8 +61,8 @@ final class ArrayAuthenticator implements AuthenticatorInterface
      */
     public function __invoke(array $arguments): bool
     {
-        $user = $arguments["user"];
-        $password = $arguments["password"];
+        $user = $arguments["user"] ?? '';
+        $password = $arguments["password"] ?? '';
 
         /* Unknown user. */
         if (!isset($this->options["users"][$user])) {
