@@ -24,11 +24,6 @@ SOFTWARE.
 
 */
 
-/**
- * @see       https://github.com/tuupola/slim-basic-auth
- * @license   https://www.opensource.org/licenses/mit-license.php
- */
-
 declare(strict_types=1);
 
 namespace Tuupola\Middleware\HttpBasicAuthentication;
@@ -37,17 +32,21 @@ use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Rule to decide by request path whether the request should be authenticated or not.
+ *
+ * @see       https://github.com/tuupola/slim-basic-auth
+ *
+ * @license   https://www.opensource.org/licenses/mit-license.php
  */
-
 final class RequestPathRule implements RuleInterface
 {
     /**
      * Stores all the options passed to the rule.
+     *
      * @var mixed[]
      */
     private $options = [
-        "path" => ["/"],
-        "ignore" => [],
+        'path' => ['/'],
+        'ignore' => [],
     ];
 
     /**
@@ -60,24 +59,25 @@ final class RequestPathRule implements RuleInterface
 
     public function __invoke(ServerRequestInterface $request): bool
     {
-        $uri = "/" . $request->getUri()->getPath();
-        $uri = (string) preg_replace("#/+#", "/", $uri);
+        $uri = '/' . $request->getUri()->getPath();
+        $uri = (string) preg_replace('#/+#', '/', $uri);
 
-        /* If request path is matches ignore should not authenticate. */
-        foreach ((array) $this->options["ignore"] as $ignore) {
-            $ignore = rtrim($ignore, "/");
-            if (!!preg_match("@^{$ignore}(/.*)?$@", $uri)) {
+        // If request path is matches ignore should not authenticate.
+        foreach ((array) $this->options['ignore'] as $ignore) {
+            $ignore = rtrim($ignore, '/');
+            if ((bool) preg_match("@^{$ignore}(/.*)?$@", $uri)) {
                 return false;
             }
         }
 
-        /* Otherwise check if path matches and we should authenticate. */
-        foreach ((array) $this->options["path"] as $path) {
-            $path = rtrim($path, "/");
-            if (!!preg_match("@^{$path}(/.*)?$@", $uri)) {
+        // Otherwise check if path matches and we should authenticate.
+        foreach ((array) $this->options['path'] as $path) {
+            $path = rtrim($path, '/');
+            if ((bool) preg_match("@^{$path}(/.*)?$@", $uri)) {
                 return true;
             }
         }
+
         return false;
     }
 }

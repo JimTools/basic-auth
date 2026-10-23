@@ -24,67 +24,69 @@ SOFTWARE.
 
 */
 
-/**
- * @see       https://github.com/tuupola/slim-basic-auth
- * @license   https://www.opensource.org/licenses/mit-license.php
- */
-
 namespace Tuupola\Middleware\HttpBasicAuthentication;
 
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @see       https://github.com/tuupola/slim-basic-auth
+ *
+ * @license   https://www.opensource.org/licenses/mit-license.php
+ *
+ * @internal
+ */
 class ArrayAuthenticatorTest extends TestCase
 {
     public function testShouldReturnTrue()
     {
         $authenticator = new ArrayAuthenticator([
-            "users" => [
-                "root" => "t00r",
-                "somebody" => "passw0rd",
-                "wheel" => '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy',
-                "dovecot" => '$2y$12$BlC21Ah2CuO7xlplqyysEejr1rwnj.uh2IEW9TX0JPgTnLNJk6XOC',
+            'users' => [
+                'root' => 't00r',
+                'somebody' => 'passw0rd',
+                'wheel' => '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy',
+                'dovecot' => '$2y$12$BlC21Ah2CuO7xlplqyysEejr1rwnj.uh2IEW9TX0JPgTnLNJk6XOC',
             ],
         ]);
         $this->assertTrue($authenticator([
-            "user" => "root",
-            "password" => "t00r",
+            'user' => 'root',
+            'password' => 't00r',
         ]));
         $this->assertTrue($authenticator([
-            "user" => "somebody",
-            "password" => "passw0rd",
+            'user' => 'somebody',
+            'password' => 'passw0rd',
         ]));
         $this->assertTrue($authenticator([
-            "user" => "wheel",
-            "password" => "gashhash",
+            'user' => 'wheel',
+            'password' => 'gashhash',
         ]));
         $this->assertTrue($authenticator([
-            "user" => "dovecot",
-            "password" => "prettyfly",
+            'user' => 'dovecot',
+            'password' => 'prettyfly',
         ]));
     }
 
     public function testShouldReturnFalse()
     {
         $authenticator = new ArrayAuthenticator([
-            "users" => [
-                "root" => "t00r",
-                "somebody" => "passw0rd",
-                "luser" => '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy',
+            'users' => [
+                'root' => 't00r',
+                'somebody' => 'passw0rd',
+                'luser' => '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy',
             ],
         ]);
         $this->assertFalse($authenticator([
-            "user" => "root",
-            "password" => "nosuch",
+            'user' => 'root',
+            'password' => 'nosuch',
         ]));
         $this->assertFalse($authenticator([
-            "user" => "nosuch",
-            "password" => "nosuch",
+            'user' => 'nosuch',
+            'password' => 'nosuch',
         ]));
 
-        /* Should handle as hash and not cleartext */
+        // Should handle as hash and not cleartext
         $this->assertFalse($authenticator([
-            "user" => "luser",
-            "password" => '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy',
+            'user' => 'luser',
+            'password' => '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy',
         ]));
     }
 }

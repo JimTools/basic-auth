@@ -24,26 +24,27 @@ SOFTWARE.
 
 */
 
-/**
- * @see       https://github.com/tuupola/slim-basic-auth
- * @license   https://www.opensource.org/licenses/mit-license.php
- */
-
 namespace Tuupola\Middleware\HttpBasicAuthentication;
 
 use Laminas\Diactoros\Response;
 use Laminas\Diactoros\ServerRequest;
-use Laminas\Diactoros\ServerRequestFactory;
 use Laminas\Diactoros\Uri;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ *
+ * @see       https://github.com/tuupola/slim-basic-auth
+ *
+ * @license   https://www.opensource.org/licenses/mit-license.php
+ */
 class RequestMethodRuleTest extends TestCase
 {
     public function testShouldNotAuthenticateOptions()
     {
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api"))
-            ->withMethod("OPTIONS");
+            ->withUri(new Uri('https://example.com/api'))
+            ->withMethod('OPTIONS');
 
         $response = new Response();
         $rule = new RequestMethodRule();
@@ -54,8 +55,8 @@ class RequestMethodRuleTest extends TestCase
     public function testShouldAuthenticatePost()
     {
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api"))
-            ->withMethod("POST");
+            ->withUri(new Uri('https://example.com/api'))
+            ->withMethod('POST');
 
         $response = new Response();
         $rule = new RequestMethodRule();
@@ -66,8 +67,8 @@ class RequestMethodRuleTest extends TestCase
     public function testShouldAuthenticateGet()
     {
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api"))
-            ->withMethod("GET");
+            ->withUri(new Uri('https://example.com/api'))
+            ->withMethod('GET');
 
         $response = new Response();
         $rule = new RequestMethodRule();
@@ -78,14 +79,14 @@ class RequestMethodRuleTest extends TestCase
     public function testShouldConfigureIgnore()
     {
         $request = (new ServerRequest())
-            ->withUri(new Uri("https://example.com/api"))
-            ->withMethod("GET");
+            ->withUri(new Uri('https://example.com/api'))
+            ->withMethod('GET');
 
         $response = new Response();
         $rule = new RequestMethodRule();
 
         $rule = new RequestMethodRule([
-            "ignore" => ["GET"],
+            'ignore' => ['GET'],
         ]);
 
         $this->assertFalse($rule($request));

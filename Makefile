@@ -19,18 +19,17 @@ vendor: $(wildcard composer.lock)
 	composer install --prefer-dist
 
 lint: vendor
-	vendor/bin/phplint . --exclude=vendor/
-	vendor/bin/ecs check src tests
+	vendor/bin/php-cs-fixer check
 
 lint-fix: vendor
-	vendor/bin/ecs check src tests --fix
+	vendor/bin/php-cs-fixer fix --diff
 
 rector:
 	vendor/bin/rector --clear-cache --dry-run
 
 rector-fix:
 	vendor/bin/rector --clear-cache
-	vendor/bin/ecs check src tests --fix
+	vendor/bin/php-cs-fixer fix --diff
 
 unit: vendor
 	phpdbg -qrr vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml --coverage-html=./report/

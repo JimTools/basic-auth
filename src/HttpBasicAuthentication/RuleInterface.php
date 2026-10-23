@@ -24,17 +24,17 @@ SOFTWARE.
 
 */
 
-/**
- * @see       https://github.com/tuupola/slim-basic-auth
- * @license   https://www.opensource.org/licenses/mit-license.php
- */
-
 declare(strict_types=1);
 
 namespace Tuupola\Middleware\HttpBasicAuthentication;
 
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * @see       https://github.com/tuupola/slim-basic-auth
+ *
+ * @license   https://www.opensource.org/licenses/mit-license.php
+ */
 interface RuleInterface
 {
     public function __invoke(ServerRequestInterface $request): bool;
