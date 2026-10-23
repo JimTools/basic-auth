@@ -1,0 +1,24 @@
+{
+  "name": "basic-auth",
+  "version": "1.0.1",
+  "description": "PSR-7 and PSR-15 HTTP Basic Authentication Middleware",
+  "homepage": "https://github.com/JimTools/basic-auth#readme",
+  "bugs": {
+    "url": "https://github.com/JimTools/basic-auth/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JimTools/basic-auth.git"
+  },
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^2.0.0-alpha.20"
+  }
+}

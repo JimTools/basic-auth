@@ -11,3 +11,5 @@ phpunit.xml
 coverage.xml
 .phpunit.result.cache
 
+.vitepress/dist
+.vitepress/cache
