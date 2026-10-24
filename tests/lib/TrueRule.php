@@ -24,16 +24,16 @@ SOFTWARE.
 
 */
 
-/**
- * @see       https://github.com/tuupola/slim-basic-auth
- * @license   https://www.opensource.org/licenses/mit-license.php
- */
-
 namespace Test;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Tuupola\Middleware\HttpBasicAuthentication\RuleInterface;
 
+/**
+ * @see       https://github.com/tuupola/slim-basic-auth
+ *
+ * @license   https://www.opensource.org/licenses/mit-license.php
+ */
 class TrueRule implements RuleInterface
 {
     public function __invoke(ServerRequestInterface $request): bool

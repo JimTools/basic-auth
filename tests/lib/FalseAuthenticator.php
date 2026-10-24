@@ -24,15 +24,15 @@ SOFTWARE.
 
 */
 
-/**
- * @see       https://github.com/tuupola/slim-basic-auth
- * @license   https://www.opensource.org/licenses/mit-license.php
- */
-
 namespace Test;
 
 use Tuupola\Middleware\HttpBasicAuthentication\AuthenticatorInterface;
 
+/**
+ * @see       https://github.com/tuupola/slim-basic-auth
+ *
+ * @license   https://www.opensource.org/licenses/mit-license.php
+ */
 class FalseAuthenticator implements AuthenticatorInterface
 {
     public function __invoke(array $arguments): bool
