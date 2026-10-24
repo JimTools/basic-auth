@@ -24,12 +24,12 @@ final class HttpBasicAuthentication implements MiddlewareInterface
     /**
      * @var SplStack<RuleInterface>
      */
-    private $rules;
+    private SplStack $rules;
 
     /**
      * @var mixed[]
      */
-    private $options = [
+    private array $options = [
         'secure' => true,
         'relaxed' => ['localhost', '127.0.0.1'],
         'users' => null,

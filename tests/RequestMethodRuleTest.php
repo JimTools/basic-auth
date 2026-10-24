@@ -5,11 +5,13 @@ namespace Tuupola\Middleware\HttpBasicAuthentication;
 use Laminas\Diactoros\Response;
 use Laminas\Diactoros\ServerRequest;
 use Laminas\Diactoros\Uri;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
+#[CoversClass(RequestMethodRule::class)]
 class RequestMethodRuleTest extends TestCase
 {
     public function testShouldNotAuthenticateOptions()

@@ -1,3 +1,4 @@
+.phpunit.cache
 .vitepress/dist
 .vitepress/cache
 /node_modules/
@@ -6,11 +7,9 @@
 # PHP CS Fixer configuration
 /.php-cs-fixer.cache
 /.php-cs-fixer.php
-.phpunit.result.cache
 composer.lock
 coverage.xml
 package-lock.json
 .DS_Store
 phpunit.xml
-
 .idea

@@ -11,7 +11,7 @@ final class ArrayAuthenticator implements AuthenticatorInterface
      *
      * @var mixed[]
      */
-    private $options;
+    private array $options;
 
     /**
      * @param mixed[] $options

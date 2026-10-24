@@ -16,7 +16,7 @@ final class RequestPathRule implements RuleInterface
      *
      * @var mixed[]
      */
-    private $options = [
+    private array $options = [
         'path' => ['/'],
         'ignore' => [],
     ];

@@ -3,6 +3,7 @@
 namespace Tuupola\Middleware\HttpBasicAuthentication;
 
 use Equip\Dispatch\MiddlewareCollection;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -17,10 +18,8 @@ use Tuupola\Middleware\HttpBasicAuthentication;
 
 /**
  * @internal
- *
- *
- * /
  */
+#[CoversClass(HttpBasicAuthentication::class)]
 class HttpBasicAuthenticationTest extends TestCase
 {
     public function testShouldFailWithoutAuthenticator()

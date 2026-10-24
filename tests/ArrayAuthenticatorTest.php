@@ -2,11 +2,13 @@
 
 namespace Tuupola\Middleware\HttpBasicAuthentication;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
+#[CoversClass(ArrayAuthenticator::class)]
 class ArrayAuthenticatorTest extends TestCase
 {
     public function testShouldReturnTrue()

@@ -3,14 +3,16 @@
 namespace Tuupola\Middleware\HttpBasicAuthentication;
 
 use PDO;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
+#[CoversClass(PdoAuthenticator::class)]
 class PdoAuthenticatorTest extends TestCase
 {
-    public $pdo;
+    public PDO $pdo;
 
     public function setup(): void
     {

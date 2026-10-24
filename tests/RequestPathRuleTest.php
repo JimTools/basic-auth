@@ -4,11 +4,13 @@ namespace Tuupola\Middleware\HttpBasicAuthentication;
 
 use Laminas\Diactoros\ServerRequest;
 use Laminas\Diactoros\Uri;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
+#[CoversClass(RequestPathRule::class)]
 class RequestPathRuleTest extends TestCase
 {
     public function testShouldAcceptArrayAndStringAsPath()
