@@ -1,6 +1,6 @@
 <?php
 
-namespace Tuupola\Middleware\HttpBasicAuthentication;
+namespace JimTools\BasicAuth;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;

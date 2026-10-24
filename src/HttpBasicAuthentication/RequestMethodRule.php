@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tuupola\Middleware\HttpBasicAuthentication;
+namespace JimTools\BasicAuth;
 
 use Psr\Http\Message\ServerRequestInterface;
 

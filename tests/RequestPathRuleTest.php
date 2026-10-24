@@ -1,6 +1,6 @@
 <?php
 
-namespace Tuupola\Middleware\HttpBasicAuthentication;
+namespace JimTools\BasicAuth;
 
 use Laminas\Diactoros\ServerRequest;
 use Laminas\Diactoros\Uri;

@@ -3,7 +3,7 @@
     "type": "library",
     "description": "PSR-7 and PSR-15 HTTP Basic Authentication Middleware",
     "keywords": ["middleware", "auth", "psr-7", "psr-15"],
-    "homepage": "https://appelsiini.net/projects/slim-basic-auth",
+    "homepage": "https://github.com/JimTools/basic-auth",
     "license": "MIT",
     "authors": [
         {
@@ -27,7 +27,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Tuupola\\Middleware\\": "src"
+            "JimTools\\BasicAuth\\": "src"
         }
     },
     "autoload-dev": {

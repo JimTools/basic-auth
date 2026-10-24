@@ -1,6 +1,6 @@
 <?php
 
-namespace Tuupola\Middleware\HttpBasicAuthentication;
+namespace JimTools\BasicAuth;
 
 use PDO;
 use PHPUnit\Framework\Attributes\CoversClass;

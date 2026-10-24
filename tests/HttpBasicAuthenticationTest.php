@@ -1,6 +1,6 @@
 <?php
 
-namespace Tuupola\Middleware\HttpBasicAuthentication;
+namespace JimTools\BasicAuth;
 
 use Equip\Dispatch\MiddlewareCollection;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -14,7 +14,7 @@ use Test\TrueRule;
 use Tuupola\Http\Factory\ResponseFactory;
 use Tuupola\Http\Factory\ServerRequestFactory;
 use Tuupola\Http\Factory\StreamFactory;
-use Tuupola\Middleware\HttpBasicAuthentication;
+use JimTools\BasicAuth;
 
 /**
  * @internal

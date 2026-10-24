@@ -2,7 +2,7 @@
 
 namespace Test;
 
-use Tuupola\Middleware\HttpBasicAuthentication\AuthenticatorInterface;
+use JimTools\BasicAuth\AuthenticatorInterface;
 
 class TrueAuthenticator implements AuthenticatorInterface
 {
