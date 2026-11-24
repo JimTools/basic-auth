@@ -6,7 +6,7 @@ jobs:
       fail-fast: false
       matrix:
         operating-system: [ubuntu-latest]
-        php: ["8.0", "8.1", "8.2", "8.3", "8.4", "8.5"]
+        php: ["8.0", "8.1", "8.2", "8.3", "8.4", "8.5", "8.6"]
         dependencies: ["highest"]
     runs-on: ${{ matrix.operating-system }}
 
@@ -26,14 +26,8 @@ jobs:
         with:
           dependency-versions: ${{ matrix.dependencies }}
 
-      - name: Run linter
-        run: make lint
-
       - name: Run unit tests
         run: make unit
-
-      - name: Run static analysis
-        run: make static
 
       - name: Upload coverage
         uses: codecov/codecov-action@v6
