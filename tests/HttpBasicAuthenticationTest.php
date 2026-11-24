@@ -2,15 +2,15 @@
 
 namespace JimTools\BasicAuth\Tests;
 
-use JimTools\BasicAuth\Options;
-use JimTools\BasicAuth\Rules\RuleInterface;
 use Equip\Dispatch\MiddlewareCollection;
 use JimTools\BasicAuth\Authentication\ArrayAuthenticator;
 use JimTools\BasicAuth\Handlers\AfterHandlerInterface;
 use JimTools\BasicAuth\Handlers\BeforeHandlerInterface;
 use JimTools\BasicAuth\Middleware\HttpBasicAuthentication;
+use JimTools\BasicAuth\Options;
 use JimTools\BasicAuth\Rules\RequestMethodRule;
 use JimTools\BasicAuth\Rules\RequestPathRule;
+use JimTools\BasicAuth\Rules\RuleInterface;
 use JimTools\BasicAuth\User;
 use Laminas\Diactoros\Response;
 use Laminas\Diactoros\ServerRequest;
@@ -24,7 +24,6 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Test\FalseAuthenticator;
 use Test\TrueAuthenticator;
 use Test\TrueRule;
-use Tuupola\Http\Factory\ServerRequestFactory;
 
 /**
  * @internal
@@ -47,19 +46,6 @@ class HttpBasicAuthenticationTest extends TestCase
         );
     }
 
-    private static function nextHandler(): RequestHandlerInterface
-    {
-        return new class () implements RequestHandlerInterface {
-            public function handle(ServerRequestInterface $request): ResponseInterface
-            {
-                $response = new Response();
-                $response->getBody()->write('Success');
-
-                return $response;
-            }
-        };
-    }
-
     public function testShouldReturn200WithoutPassword()
     {
         $request = new ServerRequest(method: 'GET', uri: 'https://example.com/public');
@@ -78,7 +64,7 @@ class HttpBasicAuthenticationTest extends TestCase
             $this->authenticator,
         );
 
-        $response = $middleware->process($request, self::nextHandler());;
+        $response = $middleware->process($request, self::nextHandler());
 
         self::assertSame(401, $response->getStatusCode());
         self::assertSame('Basic realm="Not sure"', $response->getHeaderline('WWW-Authenticate'));
@@ -93,7 +79,7 @@ class HttpBasicAuthenticationTest extends TestCase
         $response = $this->middleware->process($request, self::nextHandler());
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame('Success', (string)$response->getBody());
+        self::assertSame('Success', (string) $response->getBody());
     }
 
     public function testShouldReturn200WithOptions()
@@ -103,14 +89,14 @@ class HttpBasicAuthenticationTest extends TestCase
         $response = $this->middleware->process($request, self::nextHandler());
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame('Success', (string)$response->getBody());
+        self::assertSame('Success', (string) $response->getBody());
     }
 
     public function testShouldReturn200WithoutPasswordWithAnonymousFunction()
     {
         $request = new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item');
 
-        $auth = $this->middleware->addrule(new class () implements RuleInterface {
+        $auth = $this->middleware->addrule(new class implements RuleInterface {
             public function __invoke(ServerRequestInterface $request): bool
             {
                 return false;
@@ -120,7 +106,7 @@ class HttpBasicAuthenticationTest extends TestCase
         $response = $auth->process($request, self::nextHandler());
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame('Success', (string)$response->getBody());
+        self::assertSame('Success', (string) $response->getBody());
     }
 
     public function testShouldReturn200WithIgnore()
@@ -144,11 +130,11 @@ class HttpBasicAuthenticationTest extends TestCase
 
         $options = new Options(
             rules: [new RequestPathRule(['/admin'])],
-            after: new class () implements AfterHandlerInterface {
+            after: new class implements AfterHandlerInterface {
                 public function __invoke(ResponseInterface $response, array $arguments): ResponseInterface
                 {
                     return $response
-                        ->withBody((new StreamFactory)->createStream())
+                        ->withBody((new StreamFactory())->createStream())
                         ->withStatus(401)
                         ->withHeader('WWW-Authenticate', 'Basic realm="Go away!"');
                 }
@@ -161,7 +147,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
         self::assertSame(401, $response->getStatusCode());
         self::assertSame('Basic realm="Go away!"', $response->getHeaderline('WWW-Authenticate'));
-        self::assertSame('', (string)$response->getBody());
+        self::assertSame('', (string) $response->getBody());
     }
 
     public function testShouldAlterResponseWithAfter()
@@ -172,7 +158,7 @@ class HttpBasicAuthenticationTest extends TestCase
         $auth = new HttpBasicAuthentication(
             new Options(
                 rules: [new RequestPathRule(['/admin'])],
-                after: new class () implements AfterHandlerInterface {
+                after: new class implements AfterHandlerInterface {
                     public function __invoke(ResponseInterface $response, array $arguments): ResponseInterface
                     {
                         return $response->withHeader('X-Brawndo', 'plants crave');
@@ -192,7 +178,7 @@ class HttpBasicAuthenticationTest extends TestCase
     {
         $request = new ServerRequest(uri: 'https://example.com/admin/item', method: 'GET');
 
-        $response = (new HttpBasicAuthentication(new Options(), new TrueAuthenticator))
+        $response = (new HttpBasicAuthentication(new Options(), new TrueAuthenticator()))
             ->process($request, self::nextHandler());
 
         self::assertSame(200, $response->getStatusCode());
@@ -203,7 +189,7 @@ class HttpBasicAuthenticationTest extends TestCase
     {
         $request = new ServerRequest(uri: 'https://example.com/admin/item', method: 'GET');
 
-        $auth = new HttpBasicAuthentication(new Options(), new FalseAuthenticator);
+        $auth = new HttpBasicAuthentication(new Options(), new FalseAuthenticator());
 
         $response = $auth->process($request, self::nextHandler());
 
@@ -219,7 +205,7 @@ class HttpBasicAuthenticationTest extends TestCase
         $auth = new HttpBasicAuthentication(
             new Options(
                 rules: [new RequestPathRule(['/admin'])],
-                before: new class () implements BeforeHandlerInterface {
+                before: new class implements BeforeHandlerInterface {
                     public function __invoke(ServerRequestInterface $request, array $arguments): ServerRequestInterface
                     {
                         return $request->withAttribute('user', $arguments['user']);
@@ -229,7 +215,7 @@ class HttpBasicAuthenticationTest extends TestCase
             $this->authenticator
         );
 
-        $handler = new class () implements RequestHandlerInterface {
+        $handler = new class implements RequestHandlerInterface {
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
                 $response = new Response();
@@ -242,7 +228,7 @@ class HttpBasicAuthenticationTest extends TestCase
         $response = $auth->process($request, $handler);
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame('root', (string)$response->getBody());
+        self::assertSame('root', (string) $response->getBody());
     }
 
     public function testShouldNotAllowInsecure()
@@ -319,8 +305,8 @@ class HttpBasicAuthenticationTest extends TestCase
             new Options(rules: [new RequestMethodRule(), new RequestPathRule(['/api'])]),
             $this->authenticator,
         );
-        $auth2 = $auth1->addRule(new TrueRule);
-        $auth3 = $auth1->withRules([new TrueRule]);
+        $auth2 = $auth1->addRule(new TrueRule());
+        $auth3 = $auth1->withRules([new TrueRule()]);
 
         // Closure kludge to test private properties.
         $self = $this;
@@ -376,7 +362,7 @@ class HttpBasicAuthenticationTest extends TestCase
                 new Options(
                     rules: [
                         new RequestPathRule(['/api'], ['/api/login']),
-                        new RequestMethodRule()
+                        new RequestMethodRule(),
                     ]
                 ),
                 $this->authenticator,
@@ -410,7 +396,7 @@ class HttpBasicAuthenticationTest extends TestCase
         $response = $auth->process($request, self::nextHandler());
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame('Success', (string)$response->getBody());
+        self::assertSame('Success', (string) $response->getBody());
     }
 
     public function testBug3ShouldReturn401WithoutTrailingSlash()
@@ -461,7 +447,7 @@ class HttpBasicAuthenticationTest extends TestCase
         $response = $auth->process($request, self::nextHandler());
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame('Success', (string)$response->getBody());
+        self::assertSame('Success', (string) $response->getBody());
     }
 
     public function testPull59ShouldNotErrorWithMalformedCredentials()
@@ -477,5 +463,18 @@ class HttpBasicAuthenticationTest extends TestCase
 
         self::assertSame(401, $response->getStatusCode());
         self::assertSame('', (string) $response->getBody());
+    }
+
+    private static function nextHandler(): RequestHandlerInterface
+    {
+        return new class implements RequestHandlerInterface {
+            public function handle(ServerRequestInterface $request): ResponseInterface
+            {
+                $response = new Response();
+                $response->getBody()->write('Success');
+
+                return $response;
+            }
+        };
     }
 }

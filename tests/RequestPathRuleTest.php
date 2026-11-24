@@ -107,20 +107,53 @@ class RequestPathRuleTest extends TestCase
         $this->assertFalse($rule($request));
     }
 
+    #[DataProvider('multipleSlashesProvider')]
+    public function testBug50ShouldAuthenticateMultipleSlashes(RequestInterface $request, bool $expected)
+    {
+        $rule = new RequestPathRule([
+            'path' => '/v1/api',
+        ]);
+
+        $request = (new ServerRequest())
+            ->withUri(new Uri('https://example.com/'))
+            ->withMethod('GET');
+        $this->assertFalse($rule($request));
+        $request = (new ServerRequest())
+            ->withUri(new Uri('https://example.com/v1/api'))
+            ->withMethod('GET');
+        $this->assertTrue($rule($request));
+        $request = (new ServerRequest())
+            ->withUri(new Uri('https://example.com/v1//api'))
+            ->withMethod('GET');
+        $this->assertTrue($rule($request));
+        $request = (new ServerRequest())
+            ->withUri(new Uri('https://example.com/v1//////api'))
+            ->withMethod('GET');
+        $this->assertTrue($rule($request));
+        $request = (new ServerRequest())
+            ->withUri(new Uri('https://example.com//v1/api'))
+            ->withMethod('GET');
+        $this->assertTrue($rule($request));
+        $request = (new ServerRequest())
+            ->withUri(new Uri('https://example.com//////v1/api'))
+            ->withMethod('GET');
+        $this->assertTrue($rule($request));
+    }
+
     public static function multipleSlashesProvider(): array
     {
         return [
             [
                 (new ServerRequest())
-                ->withUri(new Uri('https://example.com/'))
-                ->withMethod('GET'),
+                    ->withUri(new Uri('https://example.com/'))
+                    ->withMethod('GET'),
                 false,
             ],
             [
                 (new ServerRequest())
                     ->withUri(new Uri('https://example.com/v1/api'))
                     ->withMethod('GET'),
-                true
+                true,
             ],
             [
                 (new ServerRequest())
@@ -158,52 +191,18 @@ class RequestPathRuleTest extends TestCase
                     ->withMethod('GET'),
                 true,
             ],
-            '//v1/api' =>  [
+            '//v1/api' => [
                 (new ServerRequest())
                     ->withUri(new Uri('https://example.com//v1/api'))
                     ->withMethod('GET'),
                 true,
             ],
-            '//////v1/api'  => [
+            '//////v1/api' => [
                 (new ServerRequest())
                     ->withUri(new Uri('https://example.com//////v1/api'))
                     ->withMethod('GET'),
                 true,
-            ]
+            ],
         ];
-    }
-
-    #[DataProvider('multipleSlashesProvider')]
-    public function testBug50ShouldAuthenticateMultipleSlashes(RequestInterface $request, bool $expected)
-    {
-
-        $rule = new RequestPathRule([
-            'path' => '/v1/api',
-        ]);
-
-        $request = (new ServerRequest())
-            ->withUri(new Uri('https://example.com/'))
-            ->withMethod('GET');
-        $this->assertFalse($rule($request));
-        $request = (new ServerRequest())
-            ->withUri(new Uri('https://example.com/v1/api'))
-            ->withMethod('GET');
-        $this->assertTrue($rule($request));
-        $request = (new ServerRequest())
-            ->withUri(new Uri('https://example.com/v1//api'))
-            ->withMethod('GET');
-        $this->assertTrue($rule($request));
-        $request = (new ServerRequest())
-            ->withUri(new Uri('https://example.com/v1//////api'))
-            ->withMethod('GET');
-        $this->assertTrue($rule($request));
-        $request = (new ServerRequest())
-            ->withUri(new Uri('https://example.com//v1/api'))
-            ->withMethod('GET');
-        $this->assertTrue($rule($request));
-        $request = (new ServerRequest())
-            ->withUri(new Uri('https://example.com//////v1/api'))
-            ->withMethod('GET');
-        $this->assertTrue($rule($request));
     }
 }

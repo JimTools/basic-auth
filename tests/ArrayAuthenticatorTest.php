@@ -14,16 +14,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ArrayAuthenticator::class)]
 class ArrayAuthenticatorTest extends TestCase
 {
-    public static function trueProvider(): array
-    {
-        return [
-            'root' => ['root', 't00r'],
-            'somebody' => ['somebody', 'passw0rd'],
-            'wheel' => ['wheel', 'gashhash'],
-            'dovecot' => ['dovecot', 'prettyfly'],
-        ];
-    }
-
     #[DataProvider('trueProvider')]
     public function testShouldReturnTrue(): void
     {
@@ -40,12 +30,13 @@ class ArrayAuthenticatorTest extends TestCase
         self::assertTrue($authenticator('dovecot', 'prettyfly'));
     }
 
-    public static function falseProvider(): array
+    public static function trueProvider(): array
     {
         return [
-            'root' => ['root', 'nosuch'],
-            'somebody' => ['nosuch', 'nosuch'],
-            'luser' => ['luser', '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy'],
+            'root' => ['root', 't00r'],
+            'somebody' => ['somebody', 'passw0rd'],
+            'wheel' => ['wheel', 'gashhash'],
+            'dovecot' => ['dovecot', 'prettyfly'],
         ];
     }
 
@@ -59,5 +50,14 @@ class ArrayAuthenticatorTest extends TestCase
         ]);
 
         self::assertFalse($authenticator($username, $password));
+    }
+
+    public static function falseProvider(): array
+    {
+        return [
+            'root' => ['root', 'nosuch'],
+            'somebody' => ['nosuch', 'nosuch'],
+            'luser' => ['luser', '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy'],
+        ];
     }
 }

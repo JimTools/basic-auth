@@ -2,17 +2,17 @@
 
 namespace JimTools\BasicAuth;
 
+use SensitiveParameter;
+
 /**
  * @codeCoverageIgnore
  */
 final readonly class User
 {
     public function __construct(
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         public string $username,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         public string $password,
-    )
-    {
-    }
+    ) {}
 }

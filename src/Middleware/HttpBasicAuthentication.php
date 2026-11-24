@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace JimTools\BasicAuth\Middleware;
 
-use Closure;
 use JimTools\BasicAuth\Authentication\AuthenticatorInterface;
 use JimTools\BasicAuth\Options;
 use JimTools\BasicAuth\Rules\RuleInterface;
@@ -25,10 +24,9 @@ final class HttpBasicAuthentication implements MiddlewareInterface
     private SplStack $rules;
 
     public function __construct(
-        private readonly Options                $options,
+        private readonly Options $options,
         private readonly AuthenticatorInterface $authenticator
-    )
-    {
+    ) {
         // Setup stack for rules
         $this->rules = new SplStack();
         foreach ($options->rules as $rule) {
@@ -104,23 +102,6 @@ final class HttpBasicAuthentication implements MiddlewareInterface
     }
 
     /**
-     * @param string $header
-     *
-     * @return array{0:null|string,1:null|string}
-     */
-    private function getCredentialsFromHeader(#[SensitiveParameter] string $header): array
-    {
-        if (preg_match('/Basic\s+(.*)$/i', $header, $matches)) {
-            $explodedCredential = explode(':', base64_decode($matches[1]), 2);
-            if (count($explodedCredential) == 2) {
-                return $explodedCredential;
-            }
-        }
-
-        return [null, null];
-    }
-
-    /**
      * Set the rules which determine if current request should be authenticated.
      *
      * Rules must be callables which return a boolean. If any of the rules return
@@ -157,6 +138,21 @@ final class HttpBasicAuthentication implements MiddlewareInterface
         $new->rules->push($rule);
 
         return $new;
+    }
+
+    /**
+     * @return array{0:null|string,1:null|string}
+     */
+    private function getCredentialsFromHeader(#[SensitiveParameter] string $header): array
+    {
+        if (preg_match('/Basic\s+(.*)$/i', $header, $matches)) {
+            $explodedCredential = explode(':', base64_decode($matches[1]), 2);
+            if (count($explodedCredential) == 2) {
+                return $explodedCredential;
+            }
+        }
+
+        return [null, null];
     }
 
     /**

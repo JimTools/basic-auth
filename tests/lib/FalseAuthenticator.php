@@ -2,7 +2,6 @@
 
 namespace Test;
 
-
 use JimTools\BasicAuth\Authentication\AuthenticatorInterface;
 
 class FalseAuthenticator implements AuthenticatorInterface

@@ -9,7 +9,9 @@ use SensitiveParameter;
 interface AuthenticatorInterface
 {
     public function __invoke(
-        #[SensitiveParameter] ?string $username,
-        #[SensitiveParameter] ?string $password
+        #[SensitiveParameter]
+        ?string $username,
+        #[SensitiveParameter]
+        ?string $password
     ): bool;
 }

@@ -2,8 +2,8 @@
 
 namespace Test;
 
-use Psr\Http\Message\ServerRequestInterface;
 use JimTools\BasicAuth\Rules\RuleInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class FalseRule implements RuleInterface
 {

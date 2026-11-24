@@ -18,14 +18,12 @@ final readonly class RequestPathRule implements RuleInterface
     public function __construct(
         private array $path = ['/'],
         private array $ignore = []
-    )
-    {
-    }
+    ) {}
 
     public function __invoke(ServerRequestInterface $request): bool
     {
         $uri = '/' . $request->getUri()->getPath();
-        $uri = (string)preg_replace('#/+#', '/', $uri);
+        $uri = (string) preg_replace('#/+#', '/', $uri);
 
         // If request path is matches ignore should not authenticate.
         foreach ($this->ignore as $ignore) {
