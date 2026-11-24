@@ -32,7 +32,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tuupola\\Middleware\\HttpBasicAuthentication\\": "tests",
+            "JimTools\\BasicAuth\\Test\\": "tests",
             "Test\\": "tests/lib"
         }
     },

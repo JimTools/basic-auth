@@ -1,11 +1,14 @@
 <?php
 
-namespace JimTools\BasicAuth;
+namespace JimTools\BasicAuth\Tests;
 
+use JimTools\BasicAuth\Rules\RequestPathRule;
 use Laminas\Diactoros\ServerRequest;
 use Laminas\Diactoros\Uri;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * @internal
@@ -19,14 +22,10 @@ class RequestPathRuleTest extends TestCase
             ->withUri(new Uri('https://example.com/admin/protected'))
             ->withMethod('GET');
 
-        $rule = new RequestPathRule([
-            'path' => '/admin',
-        ]);
+        $rule = new RequestPathRule(['/admin']);
         $this->assertTrue($rule($request));
 
-        $rule = new RequestPathRule([
-            'path' => ['/admin'],
-        ]);
+        $rule = new RequestPathRule(['/admin']);
         $this->assertTrue($rule($request));
     }
 
@@ -36,9 +35,7 @@ class RequestPathRuleTest extends TestCase
             ->withUri(new Uri('https://example.com/'))
             ->withMethod('GET');
 
-        $rule = new RequestPathRule([
-            'path' => '/',
-        ]);
+        $rule = new RequestPathRule(['/']);
         $this->assertTrue($rule($request));
 
         $request = (new ServerRequest())
@@ -54,9 +51,7 @@ class RequestPathRuleTest extends TestCase
             ->withUri(new Uri('https://example.com/'))
             ->withMethod('GET');
 
-        $rule = new RequestPathRule([
-            'path' => '/api',
-        ]);
+        $rule = new RequestPathRule(['/api']);
         $this->assertFalse($rule($request));
 
         $request = (new ServerRequest())
@@ -69,9 +64,7 @@ class RequestPathRuleTest extends TestCase
     public function testShouldAuthenticateCreateAndList()
     {
         // Authenticate only create and list actions
-        $rule = new RequestPathRule([
-            'path' => ['/api/create', '/api/list'],
-        ]);
+        $rule = new RequestPathRule(['/api/create', '/api/list']);
 
         // Should not authenticate
         $request = (new ServerRequest())
@@ -104,10 +97,7 @@ class RequestPathRuleTest extends TestCase
             ->withUri(new Uri('https://example.com/api'))
             ->withMethod('GET');
 
-        $rule = new RequestPathRule([
-            'path' => '/api',
-            'ignore' => ['/api/login'],
-        ]);
+        $rule = new RequestPathRule(['/api'], ['/api/login']);
         $this->assertTrue($rule($request));
 
         $request = (new ServerRequest())
@@ -117,14 +107,83 @@ class RequestPathRuleTest extends TestCase
         $this->assertFalse($rule($request));
     }
 
-    public function testBug50ShouldAuthenticateMultipleSlashes()
+    public static function multipleSlashesProvider(): array
     {
-        $request = (new ServerRequest())
-            ->withUri(new Uri('https://example.com/'))
-            ->withMethod('GET');
+        return [
+            [
+                (new ServerRequest())
+                ->withUri(new Uri('https://example.com/'))
+                ->withMethod('GET'),
+                false,
+            ],
+            [
+                (new ServerRequest())
+                    ->withUri(new Uri('https://example.com/v1/api'))
+                    ->withMethod('GET'),
+                true
+            ],
+            [
+                (new ServerRequest())
+                    ->withUri(new Uri('https://example.com/v1//api'))
+                    ->withMethod('GET'),
+                true,
+            ],
+            [
+                (new ServerRequest())
+                    ->withUri(new Uri('https://example.com/v1//////api'))
+                    ->withMethod('GET'),
+                true,
+            ],
+            [
+                (new ServerRequest())
+                    ->withUri(new Uri('https://example.com//v1/api'))
+                    ->withMethod('GET'),
+                true,
+            ],
+            [
+                (new ServerRequest())
+                    ->withUri(new Uri('https://example.com/v1//////api'))
+                    ->withMethod('GET'),
+                true,
+            ],
+            [
+                (new ServerRequest())
+                    ->withUri(new Uri('https://example.com/v1//////api'))
+                    ->withMethod('GET'),
+                true,
+            ],
+            '/v1//////api' => [
+                (new ServerRequest())
+                    ->withUri(new Uri('https://example.com/v1//////api'))
+                    ->withMethod('GET'),
+                true,
+            ],
+            '//v1/api' =>  [
+                (new ServerRequest())
+                    ->withUri(new Uri('https://example.com//v1/api'))
+                    ->withMethod('GET'),
+                true,
+            ],
+            '//////v1/api'  => [
+                (new ServerRequest())
+                    ->withUri(new Uri('https://example.com//////v1/api'))
+                    ->withMethod('GET'),
+                true,
+            ]
+        ];
+    }
+
+    #[DataProvider('multipleSlashesProvider')]
+    public function testBug50ShouldAuthenticateMultipleSlashes(RequestInterface $request, bool $expected)
+    {
+
         $rule = new RequestPathRule([
             'path' => '/v1/api',
         ]);
+
+        $request = (new ServerRequest())
+            ->withUri(new Uri('https://example.com/'))
+            ->withMethod('GET');
         $this->assertFalse($rule($request));
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/v1/api'))

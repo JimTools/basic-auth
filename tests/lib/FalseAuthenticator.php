@@ -2,11 +2,12 @@
 
 namespace Test;
 
-use JimTools\BasicAuth\AuthenticatorInterface;
+
+use JimTools\BasicAuth\Authentication\AuthenticatorInterface;
 
 class FalseAuthenticator implements AuthenticatorInterface
 {
-    public function __invoke(array $arguments): bool
+    public function __invoke(?string $username, ?string $password): bool
     {
         return false;
     }

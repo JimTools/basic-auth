@@ -1,8 +1,11 @@
 <?php
 
-namespace JimTools\BasicAuth;
+namespace JimTools\BasicAuth\Tests;
 
+use JimTools\BasicAuth\Authentication\ArrayAuthenticator;
+use JimTools\BasicAuth\User;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -11,56 +14,50 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ArrayAuthenticator::class)]
 class ArrayAuthenticatorTest extends TestCase
 {
-    public function testShouldReturnTrue()
+    public static function trueProvider(): array
     {
-        $authenticator = new ArrayAuthenticator([
-            'users' => [
-                'root' => 't00r',
-                'somebody' => 'passw0rd',
-                'wheel' => '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy',
-                'dovecot' => '$2y$12$BlC21Ah2CuO7xlplqyysEejr1rwnj.uh2IEW9TX0JPgTnLNJk6XOC',
-            ],
-        ]);
-        $this->assertTrue($authenticator([
-            'user' => 'root',
-            'password' => 't00r',
-        ]));
-        $this->assertTrue($authenticator([
-            'user' => 'somebody',
-            'password' => 'passw0rd',
-        ]));
-        $this->assertTrue($authenticator([
-            'user' => 'wheel',
-            'password' => 'gashhash',
-        ]));
-        $this->assertTrue($authenticator([
-            'user' => 'dovecot',
-            'password' => 'prettyfly',
-        ]));
+        return [
+            'root' => ['root', 't00r'],
+            'somebody' => ['somebody', 'passw0rd'],
+            'wheel' => ['wheel', 'gashhash'],
+            'dovecot' => ['dovecot', 'prettyfly'],
+        ];
     }
 
-    public function testShouldReturnFalse()
+    #[DataProvider('trueProvider')]
+    public function testShouldReturnTrue(): void
     {
         $authenticator = new ArrayAuthenticator([
-            'users' => [
-                'root' => 't00r',
-                'somebody' => 'passw0rd',
-                'luser' => '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy',
-            ],
+            new User('root', 't00r'),
+            new User('somebody', 'passw0rd'),
+            new User('wheel', '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy'),
+            new User('dovecot', '$2y$12$BlC21Ah2CuO7xlplqyysEejr1rwnj.uh2IEW9TX0JPgTnLNJk6XOC'),
         ]);
-        $this->assertFalse($authenticator([
-            'user' => 'root',
-            'password' => 'nosuch',
-        ]));
-        $this->assertFalse($authenticator([
-            'user' => 'nosuch',
-            'password' => 'nosuch',
-        ]));
 
-        // Should handle as hash and not cleartext
-        $this->assertFalse($authenticator([
-            'user' => 'luser',
-            'password' => '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy',
-        ]));
+        self::assertTrue($authenticator('root', 't00r'));
+        self::assertTrue($authenticator('somebody', 'passw0rd'));
+        self::assertTrue($authenticator('wheel', 'gashhash'));
+        self::assertTrue($authenticator('dovecot', 'prettyfly'));
+    }
+
+    public static function falseProvider(): array
+    {
+        return [
+            'root' => ['root', 'nosuch'],
+            'somebody' => ['nosuch', 'nosuch'],
+            'luser' => ['luser', '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy'],
+        ];
+    }
+
+    #[DataProvider('falseProvider')]
+    public function testShouldReturnFalse(string $username, string $password): void
+    {
+        $authenticator = new ArrayAuthenticator([
+            new User('root', 't00r'),
+            new User('somebody', 'passw0rd'),
+            new User('luser', '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy'),
+        ]);
+
+        self::assertFalse($authenticator($username, $password));
     }
 }

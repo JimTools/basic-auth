@@ -3,7 +3,7 @@
 namespace Test;
 
 use Psr\Http\Message\ServerRequestInterface;
-use JimTools\BasicAuth\RuleInterface;
+use JimTools\BasicAuth\Rules\RuleInterface;
 
 class TrueRule implements RuleInterface
 {

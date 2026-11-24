@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JimTools\BasicAuth;
+namespace JimTools\BasicAuth\Authentication;
 
 use PDO;
 
