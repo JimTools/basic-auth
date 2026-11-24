@@ -1,8 +1,8 @@
 {
     "name": "jimtools/basic-auth",
     "type": "library",
-    "description": "PSR-7 and PSR-15 HTTP Basic Authentication Middleware",
-    "keywords": ["middleware", "auth", "psr-7", "psr-15"],
+    "description": "PSR-15 HTTP Basic Authentication Middleware",
+    "keywords": ["middleware", "auth", "psr-15"],
     "homepage": "https://github.com/JimTools/basic-auth",
     "license": "MIT",
     "authors": [
@@ -21,8 +21,7 @@
     "require": {
         "php": "^8.2",
         "psr/http-message": "^1.0 || ^2.0",
-        "psr/http-server-middleware": "^1.0",
-        "tuupola/callable-handler": "^0.3.0|^0.4.0|^1.0"
+        "psr/http-server-middleware": "^1.0"
     },
     "autoload": {
         "psr-4": {
