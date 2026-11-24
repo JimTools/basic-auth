@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JimTools\BasicAuth\Tests;
 
 use Equip\Dispatch\MiddlewareCollection;
@@ -26,6 +28,9 @@ use Test\FalseAuthenticator;
 use Test\TrueAuthenticator;
 use Test\TrueRule;
 
+use function call_user_func;
+use function count;
+
 /**
  * @internal
  */
@@ -33,7 +38,7 @@ use Test\TrueRule;
 #[UsesClass(RequestMethodRule::class)]
 #[UsesClass(RequestPathRule::class)]
 #[CoversClass(HttpBasicAuthentication::class)]
-class HttpBasicAuthenticationTest extends TestCase
+final class HttpBasicAuthenticationTest extends TestCase
 {
     protected HttpBasicAuthentication $middleware;
     protected ArrayAuthenticator $authenticator;
@@ -315,17 +320,17 @@ class HttpBasicAuthenticationTest extends TestCase
         // Closure kludge to test private properties.
         $self = $this;
 
-        $closure = function () use ($self) {
+        $closure = function () use ($self): void {
             $self::assertSame(2, count($this->rules));
         };
         call_user_func($closure->bindTo($auth1, HttpBasicAuthentication::class));
 
-        $closure = function () use ($self) {
+        $closure = function () use ($self): void {
             $self::assertSame(3, count($this->rules));
         };
         call_user_func($closure->bindTo($auth2, HttpBasicAuthentication::class));
 
-        $closure = function () use ($self) {
+        $closure = function () use ($self): void {
             $self::assertSame(1, count($this->rules));
         };
         call_user_func($closure->bindTo($auth3, HttpBasicAuthentication::class));
@@ -335,7 +340,7 @@ class HttpBasicAuthenticationTest extends TestCase
     {
         $request = new ServerRequest(uri: 'https://example.com/', method: 'GET');
 
-        $default = function (RequestInterface $request) {
+        $default = static function (RequestInterface $request) {
             $response = new Response();
             $response->getBody()->write('Success');
 
@@ -354,7 +359,7 @@ class HttpBasicAuthenticationTest extends TestCase
     {
         $request = new ServerRequest(uri: 'https://example.com/api', method: 'GET');
 
-        $default = function (ServerRequestInterface $request) {
+        $default = static function (ServerRequestInterface $request) {
             $response = new Response();
             $response->getBody()->write('Success');
 

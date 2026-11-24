@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JimTools\BasicAuth\Tests;
 
 use JimTools\BasicAuth\Rules\RequestMethodRule;
@@ -12,7 +14,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RequestMethodRule::class)]
-class RequestMethodRuleTest extends TestCase
+final class RequestMethodRuleTest extends TestCase
 {
     public function testShouldNotAuthenticateOptions(): void
     {
@@ -22,7 +24,7 @@ class RequestMethodRuleTest extends TestCase
 
         $rule = new RequestMethodRule();
 
-        $this->assertFalse($rule($request));
+        self::assertFalse($rule($request));
     }
 
     public function testShouldAuthenticatePost(): void
@@ -33,7 +35,7 @@ class RequestMethodRuleTest extends TestCase
 
         $rule = new RequestMethodRule();
 
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
     }
 
     public function testShouldAuthenticateGet(): void
@@ -44,7 +46,7 @@ class RequestMethodRuleTest extends TestCase
 
         $rule = new RequestMethodRule();
 
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
     }
 
     public function testShouldConfigureIgnore(): void

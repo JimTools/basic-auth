@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JimTools\BasicAuth\Tests;
 
 use JimTools\BasicAuth\Authentication\ArrayAuthenticator;
@@ -12,9 +14,9 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ArrayAuthenticator::class)]
-class ArrayAuthenticatorTest extends TestCase
+final class ArrayAuthenticatorTest extends TestCase
 {
-    #[DataProvider('trueProvider')]
+    #[DataProvider('provideShouldReturnTrueCases')]
     public function testShouldReturnTrue(): void
     {
         $authenticator = new ArrayAuthenticator([
@@ -33,7 +35,7 @@ class ArrayAuthenticatorTest extends TestCase
     /**
      * @return array<string,array{0:string,1:string}>
      */
-    public static function trueProvider(): array
+    public static function provideShouldReturnTrueCases(): iterable
     {
         return [
             'root' => ['root', 't00r'],
@@ -43,7 +45,7 @@ class ArrayAuthenticatorTest extends TestCase
         ];
     }
 
-    #[DataProvider('falseProvider')]
+    #[DataProvider('provideShouldReturnFalseCases')]
     public function testShouldReturnFalse(?string $username, ?string $password): void
     {
         $authenticator = new ArrayAuthenticator([
@@ -58,7 +60,7 @@ class ArrayAuthenticatorTest extends TestCase
     /**
      * @return array<string,array{0:null|string,1:null|string}>
      */
-    public static function falseProvider(): array
+    public static function provideShouldReturnFalseCases(): iterable
     {
         return [
             'root' => ['root', 'nosuch'],

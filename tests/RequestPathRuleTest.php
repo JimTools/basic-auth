@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JimTools\BasicAuth\Tests;
 
 use JimTools\BasicAuth\Rules\RequestPathRule;
@@ -14,7 +16,7 @@ use Psr\Http\Message\RequestInterface;
  * @internal
  */
 #[CoversClass(RequestPathRule::class)]
-class RequestPathRuleTest extends TestCase
+final class RequestPathRuleTest extends TestCase
 {
     public function testShouldAcceptArrayAndStringAsPath(): void
     {
@@ -23,10 +25,10 @@ class RequestPathRuleTest extends TestCase
             ->withMethod('GET');
 
         $rule = new RequestPathRule(['/admin']);
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
 
         $rule = new RequestPathRule(['/admin']);
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
     }
 
     public function testShouldAuthenticateEverything(): void
@@ -36,13 +38,13 @@ class RequestPathRuleTest extends TestCase
             ->withMethod('GET');
 
         $rule = new RequestPathRule(['/']);
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
 
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api'))
             ->withMethod('GET');
 
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
     }
 
     public function testShouldAuthenticateOnlyApi(): void
@@ -52,13 +54,13 @@ class RequestPathRuleTest extends TestCase
             ->withMethod('GET');
 
         $rule = new RequestPathRule(['/api']);
-        $this->assertFalse($rule($request));
+        self::assertFalse($rule($request));
 
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api'))
             ->withMethod('GET');
 
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
     }
 
     public function testShouldAuthenticateCreateAndList(): void
@@ -70,25 +72,25 @@ class RequestPathRuleTest extends TestCase
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api'))
             ->withMethod('GET');
-        $this->assertFalse($rule($request));
+        self::assertFalse($rule($request));
 
         // Should authenticate
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api/create'))
             ->withMethod('GET');
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
 
         // Should authenticate
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api/list'))
             ->withMethod('GET');
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
 
         // Should not authenticate
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api/ping'))
             ->withMethod('GET');
-        $this->assertFalse($rule($request));
+        self::assertFalse($rule($request));
     }
 
     public function testShouldIgnoreLogin(): void
@@ -98,16 +100,16 @@ class RequestPathRuleTest extends TestCase
             ->withMethod('GET');
 
         $rule = new RequestPathRule(['/api'], ['/api/login']);
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
 
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api/login'))
             ->withMethod('GET');
 
-        $this->assertFalse($rule($request));
+        self::assertFalse($rule($request));
     }
 
-    #[DataProvider('multipleSlashesProvider')]
+    #[DataProvider('provideBug50ShouldAuthenticateMultipleSlashesCases')]
     public function testBug50ShouldAuthenticateMultipleSlashes(RequestInterface $request, bool $expected): void
     {
         $rule = new RequestPathRule(['/v1/api']);
@@ -115,33 +117,33 @@ class RequestPathRuleTest extends TestCase
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/'))
             ->withMethod('GET');
-        $this->assertFalse($rule($request));
+        self::assertFalse($rule($request));
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/v1/api'))
             ->withMethod('GET');
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/v1//api'))
             ->withMethod('GET');
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/v1//////api'))
             ->withMethod('GET');
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com//v1/api'))
             ->withMethod('GET');
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com//////v1/api'))
             ->withMethod('GET');
-        $this->assertTrue($rule($request));
+        self::assertTrue($rule($request));
     }
 
     /**
      * @return array<array-key, array{0:ServerRequest, 1: bool}>
      */
-    public static function multipleSlashesProvider(): array
+    public static function provideBug50ShouldAuthenticateMultipleSlashesCases(): iterable
     {
         return [
             [

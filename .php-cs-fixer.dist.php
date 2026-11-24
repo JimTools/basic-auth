@@ -7,13 +7,14 @@ use PhpCsFixer\Finder;
 use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
 
 return (new Config())
+    ->setUnsupportedPhpVersionAllowed(true)
     ->setParallelConfig(ParallelConfigFactory::detect())
-    ->setRiskyAllowed(false)
+    ->setRiskyAllowed(true)
     ->setRules([
         '@PSR12' => true,
-//        '@PSR12:risky' => true,
+        '@PSR12:risky' => true,
         '@PhpCsFixer' => true,
-//        '@PhpCsFixer:risky' => true,
+        '@PhpCsFixer:risky' => true,
         'yoda_style' => false,
         'concat_space' => ['spacing' => 'one'],
         'global_namespace_import' => [
@@ -23,7 +24,7 @@ return (new Config())
         ],
         'multiline_whitespace_before_semicolons' => ['strategy' => 'no_multi_line'],
         'php_unit_test_class_requires_covers' => false, // bug #
-//        'declare_strict_types' => true,
+        'declare_strict_types' => true,
     ])
     ->setFinder(
         (new Finder())

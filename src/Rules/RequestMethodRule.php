@@ -6,6 +6,8 @@ namespace JimTools\BasicAuth\Rules;
 
 use Psr\Http\Message\ServerRequestInterface;
 
+use function in_array;
+
 final readonly class RequestMethodRule implements RuleInterface
 {
     /**

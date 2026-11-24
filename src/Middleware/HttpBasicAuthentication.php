@@ -16,6 +16,11 @@ use RuntimeException;
 use SensitiveParameter;
 use SplStack;
 
+use function call_user_func;
+use function count;
+use function in_array;
+use function sprintf;
+
 final class HttpBasicAuthentication implements MiddlewareInterface
 {
     /**
@@ -53,7 +58,7 @@ final class HttpBasicAuthentication implements MiddlewareInterface
 
             // if 'headers' is in the 'relaxed' key, then we check for forwarding
             $allowedForward = false;
-            if (in_array('headers', $this->options->relaxed)) {
+            if (in_array('headers', $this->options->relaxed, true)) {
                 if (
                     $request->getHeaderLine('X-Forwarded-Proto') === 'https'
                     && $request->getHeaderLine('X-Forwarded-Port') === '443'
@@ -113,7 +118,6 @@ final class HttpBasicAuthentication implements MiddlewareInterface
     {
         $new = clone $this;
         // Clear the stack
-        unset($new->rules);
         $new->rules = new SplStack();
 
         // Add the rules
@@ -144,9 +148,9 @@ final class HttpBasicAuthentication implements MiddlewareInterface
      */
     private function getCredentialsFromHeader(#[SensitiveParameter] string $header): array
     {
-        if (preg_match('/Basic\s+(.*)$/i', $header, $matches)) {
-            $explodedCredential = explode(':', base64_decode($matches[1]), 2);
-            if (count($explodedCredential) == 2) {
+        if (preg_match('/Basic\s+(.*)$/i', $header, $matches) !== false) {
+            $explodedCredential = explode(':', (string) base64_decode($matches[1] ?? '', true), 2);
+            if (count($explodedCredential) === 2) {
                 return $explodedCredential;
             }
         }
