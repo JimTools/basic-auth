@@ -8,6 +8,7 @@ use Closure;
 use JimTools\BasicAuth\Authentication\AuthenticatorInterface;
 use JimTools\BasicAuth\Options;
 use JimTools\BasicAuth\Rules\RuleInterface;
+use Laminas\Diactoros\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -15,7 +16,6 @@ use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 use SensitiveParameter;
 use SplStack;
-use Tuupola\Http\Factory\ResponseFactory;
 
 final class HttpBasicAuthentication implements MiddlewareInterface
 {
@@ -80,8 +80,7 @@ final class HttpBasicAuthentication implements MiddlewareInterface
         // Check if user authenticates.
         if ($this->authenticator->__invoke($username, $password) === false) {
             // Set response headers before giving it to error callback
-            return (new ResponseFactory())
-                ->createResponse(401)
+            return (new Response(status: 401))
                 ->withHeader(
                     'WWW-Authenticate',
                     sprintf('Basic realm="%s"', $this->options->realm)

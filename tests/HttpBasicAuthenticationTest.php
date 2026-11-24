@@ -12,6 +12,9 @@ use JimTools\BasicAuth\Middleware\HttpBasicAuthentication;
 use JimTools\BasicAuth\Rules\RequestMethodRule;
 use JimTools\BasicAuth\Rules\RequestPathRule;
 use JimTools\BasicAuth\User;
+use Laminas\Diactoros\Response;
+use Laminas\Diactoros\ServerRequest;
+use Laminas\Diactoros\StreamFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
@@ -21,9 +24,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Test\FalseAuthenticator;
 use Test\TrueAuthenticator;
 use Test\TrueRule;
-use Tuupola\Http\Factory\ResponseFactory;
 use Tuupola\Http\Factory\ServerRequestFactory;
-use Tuupola\Http\Factory\StreamFactory;
 
 /**
  * @internal
@@ -51,7 +52,7 @@ class HttpBasicAuthenticationTest extends TestCase
         return new class () implements RequestHandlerInterface {
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
-                $response = (new ResponseFactory())->createResponse();
+                $response = new Response();
                 $response->getBody()->write('Success');
 
                 return $response;
@@ -61,9 +62,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldReturn200WithoutPassword()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/public');
-
+        $request = new ServerRequest(method: 'GET', uri: 'https://example.com/public');
         $response = $this->middleware->process($request, $this->nextHandler());
 
         self::assertSame(200, $response->getStatusCode());
@@ -72,8 +71,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldReturn401WithoutPassword()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin/item');
+        $request = new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item');
 
         $middleware = new HttpBasicAuthentication(
             new Options(rules: [new RequestPathRule(['/admin'])], realm: 'Not sure'),
@@ -89,8 +87,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldReturn200WithPassword()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin/item')
+        $request = (new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item'))
             ->withHeader('Authorization', 'Basic cm9vdDp0MDBy');
 
         $response = $this->middleware->process($request, self::nextHandler());
@@ -101,8 +98,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldReturn200WithOptions()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('OPTIONS', 'https://example.com/admin/item');
+        $request = new ServerRequest(method: 'OPTIONS', uri: 'https://example.com/admin/item');
 
         $response = $this->middleware->process($request, self::nextHandler());
 
@@ -112,9 +108,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldReturn200WithoutPasswordWithAnonymousFunction()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin/item');
-
+        $request = new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item');
 
         $auth = $this->middleware->addrule(new class () implements RuleInterface {
             public function __invoke(ServerRequestInterface $request): bool
@@ -131,8 +125,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldReturn200WithIgnore()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin/ping');
+        $request = new ServerRequest(method: 'GET', uri: 'https://example.com/admin/ping');
 
         $auth = new HttpBasicAuthentication(
             new Options(rules: [new RequestPathRule(['/admin'], ['/admin/ping'])]),
@@ -146,8 +139,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldReturn401WithFromAfter()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin/item')
+        $request = (new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item'))
             ->withHeader('Authorization', 'Basic cm9vdDp0MDBy');
 
         $options = new Options(
@@ -156,7 +148,7 @@ class HttpBasicAuthenticationTest extends TestCase
                 public function __invoke(ResponseInterface $response, array $arguments): ResponseInterface
                 {
                     return $response
-                        ->withBody((new StreamFactory())->createStream())
+                        ->withBody((new StreamFactory)->createStream())
                         ->withStatus(401)
                         ->withHeader('WWW-Authenticate', 'Basic realm="Go away!"');
                 }
@@ -174,8 +166,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldAlterResponseWithAfter()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin/item')
+        $request = (new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item'))
             ->withHeader('Authorization', 'Basic cm9vdDp0MDBy');
 
         $auth = new HttpBasicAuthentication(
@@ -199,10 +190,9 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldReturn200WithTrueAuthenticator()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin/item');
+        $request = new ServerRequest(uri: 'https://example.com/admin/item', method: 'GET');
 
-        $response = new HttpBasicAuthentication(new Options(), new TrueAuthenticator)
+        $response = (new HttpBasicAuthentication(new Options(), new TrueAuthenticator))
             ->process($request, self::nextHandler());
 
         self::assertSame(200, $response->getStatusCode());
@@ -211,8 +201,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldReturn401WithFalseAuthenticator()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin/item');
+        $request = new ServerRequest(uri: 'https://example.com/admin/item', method: 'GET');
 
         $auth = new HttpBasicAuthentication(new Options(), new FalseAuthenticator);
 
@@ -224,8 +213,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldModifyRequestUsingBefore()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin/item')
+        $request = (new ServerRequest(uri: 'https://example.com/admin/item', method: 'GET'))
             ->withHeader('Authorization', 'Basic cm9vdDp0MDBy');
 
         $auth = new HttpBasicAuthentication(
@@ -244,7 +232,7 @@ class HttpBasicAuthenticationTest extends TestCase
         $handler = new class () implements RequestHandlerInterface {
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
-                $response = (new ResponseFactory())->createResponse();
+                $response = new Response();
                 $response->getBody()->write($request->getAttribute('user'));
 
                 return $response;
@@ -261,8 +249,7 @@ class HttpBasicAuthenticationTest extends TestCase
     {
         $this->expectException('RuntimeException');
 
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'http://example.com/api');
+        $request = new ServerRequest(uri: 'http://example.com/api', method: 'GET');
 
         $auth = new HttpBasicAuthentication(
             new Options(rules: [new RequestPathRule(['/api'])]),
@@ -274,10 +261,9 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldRelaxInsecureInLocalhost()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'http://localhost/api');
+        $request = new ServerRequest(uri: 'http://localhost/api', method: 'GET');
 
-        $response = (new ResponseFactory())->createResponse();
+        $response = new Response();
 
         $auth = new HttpBasicAuthentication(
             new Options(
@@ -293,8 +279,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldRelaxInsecureViaSetting()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'http://example.com/api');
+        $request = new ServerRequest(uri: 'http://example.com/api', method: 'GET');
 
         $auth = new HttpBasicAuthentication(
             new Options(
@@ -311,8 +296,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldRelaxForwardedViaSetting()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'http://example.com/api')
+        $request = (new ServerRequest(uri: 'http://example.com/api', method: 'GET'))
             ->withHeader('X-Forwarded-Proto', 'https')
             ->withHeader('X-Forwarded-Port', '443');
 
@@ -359,11 +343,10 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldHandlePsr15()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/');
+        $request = new ServerRequest(uri: 'https://example.com/', method: 'GET');
 
         $default = function (RequestInterface $request) {
-            $response = (new ResponseFactory())->createResponse();
+            $response = new Response();
             $response->getBody()->write('Success');
 
             return $response;
@@ -379,11 +362,10 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testShouldHandleRulesArrayBug()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/api');
+        $request = new ServerRequest(uri: 'https://example.com/api', method: 'GET');
 
         $default = function (ServerRequestInterface $request) {
-            $response = (new ResponseFactory())->createResponse();
+            $response = new Response();
             $response->getBody()->write('Success');
 
             return $response;
@@ -406,8 +388,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame(401, $response->getStatusCode());
         self::assertSame('', (string) $response->getBody());
 
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/api/login');
+        $request = new ServerRequest(uri: 'https://example.com/api/login', method: 'GET');
 
         $response = $collection->dispatch($request, $default);
 
@@ -419,8 +400,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testBug2UrlShouldMatchRegex()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/status/foo');
+        $request = new ServerRequest(uri: 'https://example.com/status/foo', method: 'GET');
 
         $auth = new HttpBasicAuthentication(
             new Options(rules: [new RequestPathRule(['/stat'])]),
@@ -435,8 +415,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testBug3ShouldReturn401WithoutTrailingSlash()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin');
+        $request = new ServerRequest(uri: 'https://example.com/admin', method: 'GET');
 
         $response = $this->middleware->process($request, self::nextHandler());
 
@@ -446,8 +425,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testBug3ShouldReturn401WithTrailingSlash()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/admin');
+        $request = new ServerRequest(uri: 'https://example.com/admin', method: 'GET');
 
         $response = $this->middleware->process($request, self::nextHandler());
 
@@ -457,8 +435,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testBug9ShouldAllowUnauthenticatedHttp()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/public/foo');
+        $request = new ServerRequest(uri: 'https://example.com/public/foo', method: 'GET');
 
         $auth = new HttpBasicAuthentication(
             new Options(rules: [new RequestPathRule(['/api', '/bar'])]),
@@ -473,8 +450,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testBug31ShouldAllowColonInPassword()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/api/foo')
+        $request = (new ServerRequest(uri: 'https://example.com/api/foo', method: 'GET'))
             ->withHeader('Authorization', 'Basic Zm9vOmJhcjpwb3A=');
 
         $auth = new HttpBasicAuthentication(
@@ -490,8 +466,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     public function testPull59ShouldNotErrorWithMalformedCredentials()
     {
-        $request = (new ServerRequestFactory())
-            ->createServerRequest('GET', 'https://example.com/api/foo')
+        $request = (new ServerRequest(uri: 'https://example.com/api/foo', method: 'GET'))
             ->withHeader('Authorization', 'Basic Zm9vCg=='); // foo
 
         $auth = new HttpBasicAuthentication(
