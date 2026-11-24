@@ -30,6 +30,9 @@ class ArrayAuthenticatorTest extends TestCase
         self::assertTrue($authenticator('dovecot', 'prettyfly'));
     }
 
+    /**
+     * @return array<string,array{0:string,1:string}>
+     */
     public static function trueProvider(): array
     {
         return [
@@ -41,7 +44,7 @@ class ArrayAuthenticatorTest extends TestCase
     }
 
     #[DataProvider('falseProvider')]
-    public function testShouldReturnFalse(string $username, string $password): void
+    public function testShouldReturnFalse(?string $username, ?string $password): void
     {
         $authenticator = new ArrayAuthenticator([
             new User('root', 't00r'),
@@ -52,12 +55,16 @@ class ArrayAuthenticatorTest extends TestCase
         self::assertFalse($authenticator($username, $password));
     }
 
+    /**
+     * @return array<string,array{0:null|string,1:null|string}>
+     */
     public static function falseProvider(): array
     {
         return [
             'root' => ['root', 'nosuch'],
             'somebody' => ['nosuch', 'nosuch'],
             'luser' => ['luser', '$2y$10$Tm03qGT4FLqobzbZcfLDcOVIwZEpg20QZYffleeA2jfcClLpufYpy'],
+            'null' => [null, null],
         ];
     }
 }

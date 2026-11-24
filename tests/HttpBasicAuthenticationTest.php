@@ -16,6 +16,7 @@ use Laminas\Diactoros\Response;
 use Laminas\Diactoros\ServerRequest;
 use Laminas\Diactoros\StreamFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -28,6 +29,9 @@ use Test\TrueRule;
 /**
  * @internal
  */
+#[UsesClass(ArrayAuthenticator::class)]
+#[UsesClass(RequestMethodRule::class)]
+#[UsesClass(RequestPathRule::class)]
 #[CoversClass(HttpBasicAuthentication::class)]
 class HttpBasicAuthenticationTest extends TestCase
 {
@@ -46,7 +50,7 @@ class HttpBasicAuthenticationTest extends TestCase
         );
     }
 
-    public function testShouldReturn200WithoutPassword()
+    public function testShouldReturn200WithoutPassword(): void
     {
         $request = new ServerRequest(method: 'GET', uri: 'https://example.com/public');
         $response = $this->middleware->process($request, $this->nextHandler());
@@ -55,7 +59,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('Success', (string) $response->getBody());
     }
 
-    public function testShouldReturn401WithoutPassword()
+    public function testShouldReturn401WithoutPassword(): void
     {
         $request = new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item');
 
@@ -71,7 +75,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('', (string) $response->getBody());
     }
 
-    public function testShouldReturn200WithPassword()
+    public function testShouldReturn200WithPassword(): void
     {
         $request = (new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item'))
             ->withHeader('Authorization', 'Basic cm9vdDp0MDBy');
@@ -82,7 +86,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('Success', (string) $response->getBody());
     }
 
-    public function testShouldReturn200WithOptions()
+    public function testShouldReturn200WithOptions(): void
     {
         $request = new ServerRequest(method: 'OPTIONS', uri: 'https://example.com/admin/item');
 
@@ -92,7 +96,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('Success', (string) $response->getBody());
     }
 
-    public function testShouldReturn200WithoutPasswordWithAnonymousFunction()
+    public function testShouldReturn200WithoutPasswordWithAnonymousFunction(): void
     {
         $request = new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item');
 
@@ -109,7 +113,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('Success', (string) $response->getBody());
     }
 
-    public function testShouldReturn200WithIgnore()
+    public function testShouldReturn200WithIgnore(): void
     {
         $request = new ServerRequest(method: 'GET', uri: 'https://example.com/admin/ping');
 
@@ -123,7 +127,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('Success', (string) $response->getBody());
     }
 
-    public function testShouldReturn401WithFromAfter()
+    public function testShouldReturn401WithFromAfter(): void
     {
         $request = (new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item'))
             ->withHeader('Authorization', 'Basic cm9vdDp0MDBy');
@@ -131,7 +135,7 @@ class HttpBasicAuthenticationTest extends TestCase
         $options = new Options(
             rules: [new RequestPathRule(['/admin'])],
             after: new class implements AfterHandlerInterface {
-                public function __invoke(ResponseInterface $response, array $arguments): ResponseInterface
+                public function __invoke(ResponseInterface $response, ?string $username, ?string $password): ResponseInterface
                 {
                     return $response
                         ->withBody((new StreamFactory())->createStream())
@@ -150,7 +154,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('', (string) $response->getBody());
     }
 
-    public function testShouldAlterResponseWithAfter()
+    public function testShouldAlterResponseWithAfter(): void
     {
         $request = (new ServerRequest(method: 'GET', uri: 'https://example.com/admin/item'))
             ->withHeader('Authorization', 'Basic cm9vdDp0MDBy');
@@ -159,7 +163,7 @@ class HttpBasicAuthenticationTest extends TestCase
             new Options(
                 rules: [new RequestPathRule(['/admin'])],
                 after: new class implements AfterHandlerInterface {
-                    public function __invoke(ResponseInterface $response, array $arguments): ResponseInterface
+                    public function __invoke(ResponseInterface $response, ?string $username, ?string $password): ResponseInterface
                     {
                         return $response->withHeader('X-Brawndo', 'plants crave');
                     }
@@ -174,7 +178,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('plants crave', $response->getHeaderLine('X-Brawndo'));
     }
 
-    public function testShouldReturn200WithTrueAuthenticator()
+    public function testShouldReturn200WithTrueAuthenticator(): void
     {
         $request = new ServerRequest(uri: 'https://example.com/admin/item', method: 'GET');
 
@@ -185,7 +189,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('Success', (string) $response->getBody());
     }
 
-    public function testShouldReturn401WithFalseAuthenticator()
+    public function testShouldReturn401WithFalseAuthenticator(): void
     {
         $request = new ServerRequest(uri: 'https://example.com/admin/item', method: 'GET');
 
@@ -197,7 +201,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('', (string) $response->getBody());
     }
 
-    public function testShouldModifyRequestUsingBefore()
+    public function testShouldModifyRequestUsingBefore(): void
     {
         $request = (new ServerRequest(uri: 'https://example.com/admin/item', method: 'GET'))
             ->withHeader('Authorization', 'Basic cm9vdDp0MDBy');
@@ -206,9 +210,9 @@ class HttpBasicAuthenticationTest extends TestCase
             new Options(
                 rules: [new RequestPathRule(['/admin'])],
                 before: new class implements BeforeHandlerInterface {
-                    public function __invoke(ServerRequestInterface $request, array $arguments): ServerRequestInterface
+                    public function __invoke(ServerRequestInterface $request, ?string $username, ?string $password): ServerRequestInterface
                     {
-                        return $request->withAttribute('user', $arguments['user']);
+                        return $request->withAttribute('user', $username);
                     }
                 }
             ),
@@ -231,7 +235,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('root', (string) $response->getBody());
     }
 
-    public function testShouldNotAllowInsecure()
+    public function testShouldNotAllowInsecure(): void
     {
         $this->expectException('RuntimeException');
 
@@ -245,7 +249,7 @@ class HttpBasicAuthenticationTest extends TestCase
         $auth->process($request, self::nextHandler());
     }
 
-    public function testShouldRelaxInsecureInLocalhost()
+    public function testShouldRelaxInsecureInLocalhost(): void
     {
         $request = new ServerRequest(uri: 'http://localhost/api', method: 'GET');
 
@@ -263,7 +267,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame(401, $response->getStatusCode());
     }
 
-    public function testShouldRelaxInsecureViaSetting()
+    public function testShouldRelaxInsecureViaSetting(): void
     {
         $request = new ServerRequest(uri: 'http://example.com/api', method: 'GET');
 
@@ -280,7 +284,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame(401, $response->getStatusCode());
     }
 
-    public function testShouldRelaxForwardedViaSetting()
+    public function testShouldRelaxForwardedViaSetting(): void
     {
         $request = (new ServerRequest(uri: 'http://example.com/api', method: 'GET'))
             ->withHeader('X-Forwarded-Proto', 'https')
@@ -299,7 +303,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame(401, $response->getStatusCode());
     }
 
-    public function testShouldBeImmutable()
+    public function testShouldBeImmutable(): void
     {
         $auth1 = new HttpBasicAuthentication(
             new Options(rules: [new RequestMethodRule(), new RequestPathRule(['/api'])]),
@@ -327,7 +331,7 @@ class HttpBasicAuthenticationTest extends TestCase
         call_user_func($closure->bindTo($auth3, HttpBasicAuthentication::class));
     }
 
-    public function testShouldHandlePsr15()
+    public function testShouldHandlePsr15(): void
     {
         $request = new ServerRequest(uri: 'https://example.com/', method: 'GET');
 
@@ -346,7 +350,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('', (string) $response->getBody());
     }
 
-    public function testShouldHandleRulesArrayBug()
+    public function testShouldHandleRulesArrayBug(): void
     {
         $request = new ServerRequest(uri: 'https://example.com/api', method: 'GET');
 
@@ -384,7 +388,7 @@ class HttpBasicAuthenticationTest extends TestCase
 
     // BUGS
 
-    public function testBug2UrlShouldMatchRegex()
+    public function testBug2UrlShouldMatchRegex(): void
     {
         $request = new ServerRequest(uri: 'https://example.com/status/foo', method: 'GET');
 
@@ -399,7 +403,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('Success', (string) $response->getBody());
     }
 
-    public function testBug3ShouldReturn401WithoutTrailingSlash()
+    public function testBug3ShouldReturn401WithoutTrailingSlash(): void
     {
         $request = new ServerRequest(uri: 'https://example.com/admin', method: 'GET');
 
@@ -409,7 +413,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('', (string) $response->getBody());
     }
 
-    public function testBug3ShouldReturn401WithTrailingSlash()
+    public function testBug3ShouldReturn401WithTrailingSlash(): void
     {
         $request = new ServerRequest(uri: 'https://example.com/admin', method: 'GET');
 
@@ -419,7 +423,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('', (string) $response->getBody());
     }
 
-    public function testBug9ShouldAllowUnauthenticatedHttp()
+    public function testBug9ShouldAllowUnauthenticatedHttp(): void
     {
         $request = new ServerRequest(uri: 'https://example.com/public/foo', method: 'GET');
 
@@ -434,7 +438,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('Success', (string) $response->getBody());
     }
 
-    public function testBug31ShouldAllowColonInPassword()
+    public function testBug31ShouldAllowColonInPassword(): void
     {
         $request = (new ServerRequest(uri: 'https://example.com/api/foo', method: 'GET'))
             ->withHeader('Authorization', 'Basic Zm9vOmJhcjpwb3A=');
@@ -450,7 +454,7 @@ class HttpBasicAuthenticationTest extends TestCase
         self::assertSame('Success', (string) $response->getBody());
     }
 
-    public function testPull59ShouldNotErrorWithMalformedCredentials()
+    public function testPull59ShouldNotErrorWithMalformedCredentials(): void
     {
         $request = (new ServerRequest(uri: 'https://example.com/api/foo', method: 'GET'))
             ->withHeader('Authorization', 'Basic Zm9vCg=='); // foo

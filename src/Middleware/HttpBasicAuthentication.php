@@ -87,7 +87,7 @@ final class HttpBasicAuthentication implements MiddlewareInterface
 
         // Modify $request before calling next middleware.
         if ($this->options->before !== null) {
-            $request = call_user_func($this->options->before, $request, ['user' => $username, 'password' => $password]);
+            $request = call_user_func($this->options->before, $request, $username, $password);
         }
 
         // Everything ok, call next middleware.
@@ -95,7 +95,7 @@ final class HttpBasicAuthentication implements MiddlewareInterface
 
         // Modify $response before returning.
         if ($this->options->after !== null) {
-            return call_user_func($this->options->after, $response, ['user' => $username, 'password' => $password]);
+            return call_user_func($this->options->after, $response, $username, $password);
         }
 
         return $response;
@@ -134,7 +134,6 @@ final class HttpBasicAuthentication implements MiddlewareInterface
     {
         $new = clone $this;
         $new->rules = clone $this->rules;
-        // @phpstan-ignore-next-line
         $new->rules->push($rule);
 
         return $new;

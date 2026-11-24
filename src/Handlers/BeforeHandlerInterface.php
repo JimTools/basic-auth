@@ -8,5 +8,5 @@ use Psr\Http\Message\ServerRequestInterface;
 
 interface BeforeHandlerInterface
 {
-    public function __invoke(ServerRequestInterface $request, array $arguments): ServerRequestInterface;
+    public function __invoke(ServerRequestInterface $request, ?string $username, ?string $password): ServerRequestInterface;
 }

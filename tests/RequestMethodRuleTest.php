@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RequestMethodRule::class)]
 class RequestMethodRuleTest extends TestCase
 {
-    public function testShouldNotAuthenticateOptions()
+    public function testShouldNotAuthenticateOptions(): void
     {
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api'))
@@ -25,7 +25,7 @@ class RequestMethodRuleTest extends TestCase
         $this->assertFalse($rule($request));
     }
 
-    public function testShouldAuthenticatePost()
+    public function testShouldAuthenticatePost(): void
     {
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api'))
@@ -36,7 +36,7 @@ class RequestMethodRuleTest extends TestCase
         $this->assertTrue($rule($request));
     }
 
-    public function testShouldAuthenticateGet()
+    public function testShouldAuthenticateGet(): void
     {
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api'))
@@ -47,7 +47,7 @@ class RequestMethodRuleTest extends TestCase
         $this->assertTrue($rule($request));
     }
 
-    public function testShouldConfigureIgnore()
+    public function testShouldConfigureIgnore(): void
     {
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api'))

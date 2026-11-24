@@ -32,10 +32,10 @@ rector-fix:
 	vendor/bin/php-cs-fixer fix --diff
 
 unit: vendor
-	phpdbg -qrr vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml --coverage-html=./report/
+	XDEBUG_MODE=coverage vendor/bin/phpunit --display-warnings
 
 static: vendor
-	vendor/bin/phpstan analyse src --level 8
+	vendor/bin/phpstan analyse
 
 watch: vendor
 	find . -name "*.php" -not -path "./vendor/*" -o -name "*.json" -not -path "./vendor/*" | entr -c make test

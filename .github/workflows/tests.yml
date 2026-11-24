@@ -6,7 +6,7 @@ jobs:
       fail-fast: false
       matrix:
         operating-system: [ubuntu-latest]
-        php: ["8.2", "8.3", "8.4", "8.5"]
+        php: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         dependencies: ["highest"]
     runs-on: ${{ matrix.operating-system }}
 
@@ -18,7 +18,6 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: gmp
           coverage: xdebug
 
       - name: Install and cache Composer dependencies

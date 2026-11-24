@@ -20,6 +20,10 @@ final readonly class ArrayAuthenticator implements AuthenticatorInterface
         #[SensitiveParameter]
         ?string $password
     ): bool {
+        if ($username === null || $password === null) {
+            return false;
+        }
+
         foreach ($this->users as $user) {
             if ($user->username !== $username) {
                 continue;

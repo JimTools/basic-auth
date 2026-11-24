@@ -16,7 +16,7 @@ use Psr\Http\Message\RequestInterface;
 #[CoversClass(RequestPathRule::class)]
 class RequestPathRuleTest extends TestCase
 {
-    public function testShouldAcceptArrayAndStringAsPath()
+    public function testShouldAcceptArrayAndStringAsPath(): void
     {
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/admin/protected'))
@@ -29,7 +29,7 @@ class RequestPathRuleTest extends TestCase
         $this->assertTrue($rule($request));
     }
 
-    public function testShouldAuthenticateEverything()
+    public function testShouldAuthenticateEverything(): void
     {
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/'))
@@ -45,7 +45,7 @@ class RequestPathRuleTest extends TestCase
         $this->assertTrue($rule($request));
     }
 
-    public function testShouldAuthenticateOnlyApi()
+    public function testShouldAuthenticateOnlyApi(): void
     {
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/'))
@@ -61,7 +61,7 @@ class RequestPathRuleTest extends TestCase
         $this->assertTrue($rule($request));
     }
 
-    public function testShouldAuthenticateCreateAndList()
+    public function testShouldAuthenticateCreateAndList(): void
     {
         // Authenticate only create and list actions
         $rule = new RequestPathRule(['/api/create', '/api/list']);
@@ -91,7 +91,7 @@ class RequestPathRuleTest extends TestCase
         $this->assertFalse($rule($request));
     }
 
-    public function testShouldIgnoreLogin()
+    public function testShouldIgnoreLogin(): void
     {
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/api'))
@@ -108,11 +108,9 @@ class RequestPathRuleTest extends TestCase
     }
 
     #[DataProvider('multipleSlashesProvider')]
-    public function testBug50ShouldAuthenticateMultipleSlashes(RequestInterface $request, bool $expected)
+    public function testBug50ShouldAuthenticateMultipleSlashes(RequestInterface $request, bool $expected): void
     {
-        $rule = new RequestPathRule([
-            'path' => '/v1/api',
-        ]);
+        $rule = new RequestPathRule(['/v1/api']);
 
         $request = (new ServerRequest())
             ->withUri(new Uri('https://example.com/'))
@@ -140,6 +138,9 @@ class RequestPathRuleTest extends TestCase
         $this->assertTrue($rule($request));
     }
 
+    /**
+     * @return array<array-key, array{0:ServerRequest, 1: bool}>
+     */
     public static function multipleSlashesProvider(): array
     {
         return [
